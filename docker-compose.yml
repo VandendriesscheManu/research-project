@@ -55,6 +55,19 @@ services:
       - appnet
     restart: unless-stopped
 
+  url-extractor:
+    build:
+      context: ./url-extractor
+    container_name: url-extractor
+    depends_on:
+      - cloudflared
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # Access to Docker socket to read logs
+      - ./shared:/shared  # Shared volume for .env file
+    networks:
+      - appnet
+    restart: on-failure
+
 
 networks:
   appnet:
