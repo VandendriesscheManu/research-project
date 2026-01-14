@@ -1,17 +1,15 @@
 """
 Marketing Agent - Handles all marketing plan generation logic
 """
-import os
 import json
-import requests
+from .llm_client import llm_client
 
 
 class MarketingAgent:
     """AI Agent specialized in creating marketing plans"""
     
     def __init__(self):
-        self.ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
-        self.ollama_model = os.getenv("OLLAMA_MODEL", "llama3.2")
+        self.llm = llm_client
         
         self.system_prompt = """You are a professional marketing consultant AI assistant. Your role is to create comprehensive marketing plans based on product details provided by users.
 
@@ -27,18 +25,6 @@ When generating a marketing plan, include:
 
 Be professional, thorough, and actionable. Tailor your recommendations to the specific product details provided.
 """
-    
-    def _call_ollama(self, messages: list[dict]) -> str:
-        """Call Ollama LLM with prepared messages."""
-        payload = {
-            "model": self.ollama_model,
-            "messages": messages,
-            "stream": False,
-        }
-        r = requests.post(f"{self.ollama_base_url}/api/chat", json=payload, timeout=120)
-        r.raise_for_status()
-        data = r.json()
-        return data["message"]["content"]
     
     def generate_plan(self, user_message: str, history: str = "[]") -> str:
         """
@@ -67,8 +53,8 @@ Be professional, thorough, and actionable. Tailor your recommendations to the sp
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
-        # Call LLM and return response
-        return self._call_ollama(messages)
+        # Call LLM via unified client
+        return self.llm.chat(messages)
     
     def get_consultation_prompt(self, product_details: str) -> str:
         """Generate a structured marketing consultation prompt."""
