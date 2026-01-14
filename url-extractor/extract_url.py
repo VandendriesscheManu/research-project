@@ -10,7 +10,7 @@ import subprocess
 from pathlib import Path
 
 CONTAINER_NAME = "cloudflared"
-ENV_FILE = "/shared/.env.public"
+ENV_FILE = "/app/.env"
 MAX_RETRIES = 60  # Wait up to 60 seconds
 RETRY_INTERVAL = 1  # Check every second
 
@@ -53,16 +53,36 @@ def extract_url_from_logs():
 
 def write_to_env_file(url):
     """
-    Write the PUBLIC_API_BASE_URL to the env file.
+    Update PUBLIC_API_BASE_URL in the .env file.
+    Replaces existing value or appends if not found.
     """
     try:
-        # Ensure directory exists
         env_path = Path(ENV_FILE)
         env_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Write the URL
+        # Read existing content
+        lines = []
+        if env_path.exists():
+            with open(ENV_FILE, 'r') as f:
+                lines = f.readlines()
+        
+        # Update or add PUBLIC_API_BASE_URL
+        found = False
+        for i, line in enumerate(lines):
+            if line.startswith('PUBLIC_API_BASE_URL='):
+                lines[i] = f"PUBLIC_API_BASE_URL={url}\n"
+                found = True
+                break
+        
+        if not found:
+            # Add at the end
+            if lines and not lines[-1].endswith('\n'):
+                lines.append('\n')
+            lines.append(f"PUBLIC_API_BASE_URL={url}\n")
+        
+        # Write back
         with open(ENV_FILE, 'w') as f:
-            f.write(f"PUBLIC_API_BASE_URL={url}\n")
+            f.writelines(lines)
         
         print(f"✅ Written to {ENV_FILE}")
         return True

@@ -2,38 +2,9 @@ import os
 import uuid
 import requests
 import streamlit as st
-from pathlib import Path
 
-# Try to read the dynamically generated URL from the shared env file
-def get_api_base_url():
-    """
-    Read PUBLIC_API_BASE_URL from shared/.env.public if it exists,
-    otherwise fall back to environment variable or default.
-    Appends /docs to the URL.
-    """
-    shared_env_file = Path(__file__).parent.parent / "shared" / ".env.public"
-    
-    base_url = None
-    
-    if shared_env_file.exists():
-        try:
-            with open(shared_env_file, 'r') as f:
-                for line in f:
-                    if line.startswith('PUBLIC_API_BASE_URL='):
-                        base_url = line.split('=', 1)[1].strip()
-                        break
-        except Exception as e:
-            st.sidebar.warning(f"⚠️ Could not read shared env file: {e}")
-    
-    # Ensure we don't double-add /docs
-    if not base_url.endswith('/docs'):
-        base_url = base_url.rstrip('/') + '/docs'
-    
-    return base_url
-
-API_BASE_URL = get_api_base_url()
-
-# Lees API key uit env (Streamlit Cloud Secrets)
+# Read API configuration from environment
+API_BASE_URL = os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 API_KEY = os.getenv("API_KEY", "")
 
 st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
@@ -49,10 +20,10 @@ if "messages" not in st.session_state:
 
 with st.sidebar:
     st.subheader("Settings")
-    st.write("API:", API_BASE_URL)
+    # Display URL with /docs for user reference
+    display_url = f"{API_BASE_URL.rstrip('/')}/docs" if API_BASE_URL else "Not configured"
+    st.write("API:", display_url)
     st.write("Session:", st.session_state.session_id)
-
-    # Toon niet de volledige key in UI
     st.write("API key:", "✅ configured" if API_KEY else "⚠️ not configured")
 
     if st.button("New Marketing Plan"):
