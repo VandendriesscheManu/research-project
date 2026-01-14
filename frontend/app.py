@@ -25,13 +25,6 @@ def get_api_base_url():
         except Exception as e:
             st.sidebar.warning(f"⚠️ Could not read shared env file: {e}")
     
-    # Fallback to environment variable or default
-    if not base_url:
-        base_url = os.getenv(
-            "API_BASE_URL",
-            "https://collapse-monday-modifications-army.trycloudflare.com",
-        )
-    
     # Ensure we don't double-add /docs
     if not base_url.endswith('/docs'):
         base_url = base_url.rstrip('/') + '/docs'
