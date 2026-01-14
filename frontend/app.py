@@ -21,7 +21,6 @@ def get_api_base_url():
     return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 
 API_BASE_URL = get_api_base_url()
-API_KEY = os.getenv("API_KEY", "")
 
 st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
 
@@ -34,14 +33,43 @@ if "session_id" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Initialize API key from secrets (default) or allow override
+if "api_key" not in st.session_state:
+    st.session_state.api_key = st.secrets.get("API_KEY", os.getenv("API_KEY", ""))
+
 with st.sidebar:
     st.subheader("Settings")
+    
     # Display URL with /docs for user reference
     display_url = f"{API_BASE_URL.rstrip('/')}/docs" if API_BASE_URL else "Not configured"
     st.write("API:", display_url)
     st.write("Session:", st.session_state.session_id)
-    st.write("API key:", "✅ configured" if API_KEY else "⚠️ not configured")
+    
+    st.divider()
+    
+    # API Key configuration (with override option)
+    st.subheader("🔑 API Key")
+    api_key_input = st.text_input(
+        "API Key",
+        value=st.session_state.api_key,
+        type="password",
+        help="Default from Streamlit secrets. Change here to override.",
+        placeholder="Enter API key..."
+    )
+    
+    # Update session state if changed
+    if api_key_input != st.session_state.api_key:
+        st.session_state.api_key = api_key_input
+        st.success("✅ API key updated!")
+    
+    # Show status
+    if st.session_state.api_key:
+        st.caption("✅ API key is configured")
+    else:
+        st.caption("⚠️ No API key configured")
 
+    st.divider()
+    
     if st.button("New Marketing Plan"):
         st.session_state.session_id = str(uuid.uuid4())
         st.session_state.messages = []
@@ -73,8 +101,8 @@ if prompt:
 
     try:
         headers = {}
-        if API_KEY:
-            headers["X-API-KEY"] = API_KEY
+        if st.session_state.api_key:
+            headers["X-API-KEY"] = st.session_state.api_key
 
         r = requests.post(
             f"{API_BASE_URL}/chat",
