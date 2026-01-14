@@ -2,9 +2,25 @@ import os
 import uuid
 import requests
 import streamlit as st
+from pathlib import Path
 
-# Read API configuration from environment
-API_BASE_URL = os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
+# Read the dynamically generated URL from shared/.env.public
+def get_api_base_url():
+    """Read PUBLIC_API_BASE_URL from shared/.env.public if it exists."""
+    shared_env_file = Path(__file__).parent.parent / "shared" / ".env.public"
+    
+    if shared_env_file.exists():
+        try:
+            with open(shared_env_file, 'r') as f:
+                for line in f:
+                    if line.startswith('PUBLIC_API_BASE_URL='):
+                        return line.split('=', 1)[1].strip()
+        except Exception as e:
+            st.sidebar.warning(f"⚠️ Could not read shared env file: {e}")
+    
+    return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
+
+API_BASE_URL = get_api_base_url()
 API_KEY = os.getenv("API_KEY", "")
 
 st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")

@@ -63,7 +63,7 @@ services:
       - cloudflared
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro  # Access to Docker socket to read logs
-      - ./.env:/app/.env  # Mount .env file to update it
+      - ./shared:/shared  # Shared volume for .env.public file
     networks:
       - appnet
     restart: on-failure
