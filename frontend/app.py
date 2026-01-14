@@ -256,64 +256,77 @@ if st.session_state.mode == "form":
             if missing_fields:
                 st.error(f"❌ Please fill in these required fields: {', '.join(missing_fields)}")
             else:
-                st.success("✅ Form submitted! Generating your comprehensive marketing plan...")
-                st.info("🔧 **Note:** Backend functionality will be implemented next. For now, the form data is collected.")
+                # Prepare data for API
+                plan_data = {
+                    "session_id": st.session_state.session_id,
+                    "product_name": product_name,
+                    "product_category": product_category,
+                    "product_features": product_features,
+                    "product_usp": product_usp,
+                    "product_branding": product_branding,
+                    "product_variants": product_variants,
+                    "target_primary": target_primary,
+                    "target_secondary": target_secondary,
+                    "target_demographics": target_demographics,
+                    "target_psychographics": target_psychographics,
+                    "target_personas": target_personas,
+                    "target_problems": target_problems,
+                    "market_size": market_size,
+                    "competitors": competitors,
+                    "competitor_pricing": competitor_pricing,
+                    "competitor_distribution": competitor_distribution,
+                    "market_benchmarks": market_benchmarks,
+                    "production_cost": production_cost,
+                    "desired_margin": desired_margin,
+                    "suggested_price": suggested_price,
+                    "price_elasticity": price_elasticity,
+                    "marketing_channels": marketing_channels,
+                    "historical_campaigns": historical_campaigns,
+                    "marketing_budget": marketing_budget,
+                    "tone_of_voice": tone_of_voice,
+                    "distribution_channels": distribution_channels,
+                    "logistics": logistics,
+                    "seasonality": seasonality,
+                    "launch_date": str(launch_date),
+                    "seasonal_factors": seasonal_factors,
+                    "campaign_timeline": campaign_timeline,
+                    "sales_goals": sales_goals,
+                    "market_share_goals": market_share_goals,
+                    "brand_awareness_goals": brand_awareness_goals,
+                    "success_metrics": success_metrics
+                }
                 
-                # Show collected data (for testing)
-                with st.expander("📋 Collected Data Preview"):
-                    st.json({
-                        "product": {
-                            "name": product_name,
-                            "category": product_category,
-                            "features": product_features,
-                            "usp": product_usp,
-                            "branding": product_branding,
-                            "variants": product_variants
-                        },
-                        "target_audience": {
-                            "primary": target_primary,
-                            "secondary": target_secondary,
-                            "demographics": target_demographics,
-                            "psychographics": target_psychographics,
-                            "personas": target_personas,
-                            "problems": target_problems
-                        },
-                        "market": {
-                            "size": market_size,
-                            "competitors": competitors,
-                            "competitor_pricing": competitor_pricing,
-                            "distribution": competitor_distribution,
-                            "benchmarks": market_benchmarks
-                        },
-                        "pricing": {
-                            "cost": production_cost,
-                            "margin": desired_margin,
-                            "price": suggested_price,
-                            "elasticity": price_elasticity
-                        },
-                        "promotion": {
-                            "channels": marketing_channels,
-                            "history": historical_campaigns,
-                            "budget": marketing_budget,
-                            "tone": tone_of_voice
-                        },
-                        "distribution": {
-                            "channels": distribution_channels,
-                            "logistics": logistics,
-                            "seasonality": seasonality
-                        },
-                        "timing": {
-                            "launch_date": str(launch_date),
-                            "seasonal_factors": seasonal_factors,
-                            "timeline": campaign_timeline
-                        },
-                        "goals": {
-                            "sales": sales_goals,
-                            "market_share": market_share_goals,
-                            "brand_awareness": brand_awareness_goals,
-                            "metrics": success_metrics
-                        }
-                    })
+                try:
+                    # Call API to save marketing plan
+                    headers = {}
+                    if st.session_state.api_key:
+                        headers["X-API-KEY"] = st.session_state.api_key
+                    
+                    with st.spinner("💾 Saving your marketing plan data..."):
+                        response = requests.post(
+                            f"{API_BASE_URL}/marketing-plan",
+                            json=plan_data,
+                            headers=headers,
+                            timeout=30
+                        )
+                        
+                        if response.status_code == 401:
+                            st.error("❌ Unauthorized - check your API key")
+                        else:
+                            response.raise_for_status()
+                            result = response.json()
+                            
+                            st.success(f"✅ Marketing plan saved successfully! (Plan ID: {result['plan_id']})")
+                            st.info(f"📝 {result['message']}")
+                            
+                            # Show collected data
+                            with st.expander("📋 Saved Data Preview"):
+                                st.json(plan_data)
+                
+                except requests.exceptions.RequestException as e:
+                    st.error(f"❌ Failed to save marketing plan: {str(e)}")
+                except Exception as e:
+                    st.error(f"❌ An error occurred: {str(e)}")
 
 # MODE: Chat Mode (existing functionality)
 elif st.session_state.mode == "chat":

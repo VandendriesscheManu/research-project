@@ -1,7 +1,9 @@
 import os
+from typing import Optional, List
+from datetime import date
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
-from core.db import init_db, save_message, get_history
+from core.db import init_db, save_message, get_history, save_marketing_plan, get_marketing_plan
 from core.mcp_client import mcp_generate_marketing_plan
 
 app = FastAPI(title="Marketing Plan Generator API", version="0.1.0")
@@ -24,6 +26,59 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     session_id: str
     assistant_message: str
+
+
+class MarketingPlanRequest(BaseModel):
+    session_id: str
+    # Product Information
+    product_name: str
+    product_category: str
+    product_features: str
+    product_usp: str
+    product_branding: Optional[str] = None
+    product_variants: Optional[str] = None
+    # Target Audience
+    target_primary: str
+    target_secondary: Optional[str] = None
+    target_demographics: str
+    target_psychographics: str
+    target_personas: Optional[str] = None
+    target_problems: str
+    # Market & Competition
+    market_size: Optional[str] = None
+    competitors: str
+    competitor_pricing: Optional[str] = None
+    competitor_distribution: Optional[str] = None
+    market_benchmarks: Optional[str] = None
+    # Pricing
+    production_cost: Optional[str] = None
+    desired_margin: Optional[str] = None
+    suggested_price: str
+    price_elasticity: Optional[str] = None
+    # Promotion
+    marketing_channels: List[str]
+    historical_campaigns: Optional[str] = None
+    marketing_budget: Optional[str] = None
+    tone_of_voice: str
+    # Distribution
+    distribution_channels: List[str]
+    logistics: Optional[str] = None
+    seasonality: Optional[str] = None
+    # Timing
+    launch_date: Optional[date] = None
+    seasonal_factors: Optional[str] = None
+    campaign_timeline: Optional[str] = None
+    # Goals
+    sales_goals: str
+    market_share_goals: Optional[str] = None
+    brand_awareness_goals: Optional[str] = None
+    success_metrics: str
+
+
+class MarketingPlanResponse(BaseModel):
+    session_id: str
+    plan_id: int
+    message: str
 
 
 @app.on_event("startup")
@@ -60,4 +115,38 @@ def chat(req: ChatRequest, _: None = Depends(require_api_key)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/marketing-plan", response_model=MarketingPlanResponse)
+def create_marketing_plan(req: MarketingPlanRequest, _: None = Depends(require_api_key)):
+    """Store comprehensive marketing plan form data"""
+    try:
+        # Convert request to dict
+        plan_data = req.model_dump()
+        
+        # Save to database
+        plan_id = save_marketing_plan(req.session_id, plan_data)
+        
+        return MarketingPlanResponse(
+            session_id=req.session_id,
+            plan_id=plan_id,
+            message="Marketing plan data saved successfully. AI generation will be implemented next."
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save marketing plan: {str(e)}")
+
+
+@app.get("/marketing-plan/{session_id}")
+def get_plan(session_id: str, _: None = Depends(require_api_key)):
+    """Retrieve the latest marketing plan for a session"""
+    try:
+        plan = get_marketing_plan(session_id)
+        if not plan:
+            raise HTTPException(status_code=404, detail="No marketing plan found for this session")
+        return plan
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
