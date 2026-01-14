@@ -1,13 +1,18 @@
 import os
 import requests
-from fastmcp import FastMCP, Context
+from mcp.server.fastmcp import FastMCP
+from dotenv import load_dotenv
 
-# Initialize FastMCP server
-mcp = FastMCP("Marketing Plan AI Gateway")
+load_dotenv()
 
 # Environment variables
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
+
+# Create MCP server
+mcp = FastMCP(
+    name="Marketing Plan AI Gateway",
+)
 
 SYSTEM_PROMPT = """You are a professional marketing consultant AI assistant. Your role is to create comprehensive marketing plans based on product details provided by users.
 
@@ -39,13 +44,14 @@ def _call_llm(messages: list[dict]) -> str:
 
 
 @mcp.tool()
-def generate_marketing_plan(user_message: str, history: str = "") -> str:
+def generate_marketing_plan(user_message: str, history: str = "[]") -> str:
     """
     Generate a comprehensive marketing plan based on user input.
-    This is the main orchestration tool that calls the LLM.
+    This is the main MCP tool that orchestrates LLM calls.
     """
-    # Parse history from JSON string to list
     import json
+    
+    # Parse history from JSON string to list
     history_list = json.loads(history) if history else []
     
     # Build messages for LLM
@@ -65,14 +71,12 @@ def generate_marketing_plan(user_message: str, history: str = "") -> str:
     return _call_llm(messages)
 
 
-# MCP Resource - Expose the system prompt
 @mcp.resource("prompt://system")
 def get_system_prompt() -> str:
     """Get the system prompt for the marketing consultant."""
     return SYSTEM_PROMPT
 
 
-# MCP Prompt - Reusable prompt template
 @mcp.prompt()
 def marketing_consultation(product_details: str) -> str:
     """Generate a structured marketing consultation prompt."""
@@ -84,6 +88,13 @@ Please provide a comprehensive marketing strategy including target audience anal
 
 
 if __name__ == "__main__":
-    # Run the server with HTTP transport for deployment
-    mcp.run(transport="http", host="0.0.0.0", port=8000)
+    transport = "stdio"
+    if transport == "stdio":
+        print("Running MCP server with stdio transport")
+        mcp.run(transport="stdio")
+    elif transport == "streamable-http":
+        print("Running MCP server with Streamable HTTP transport")
+        mcp.run(transport="streamable-http")
+    else:
+        raise ValueError(f"Unknown transport: {transport}")
 

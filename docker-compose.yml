@@ -12,6 +12,8 @@ services:
         condition: service_started
     ports:
       - "8001:8001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # For MCP stdio client
     networks:
       - appnet
     restart: unless-stopped
@@ -24,13 +26,13 @@ services:
     container_name: mcp-server
     env_file:
       - ./.env
-    ports:
-      - "8000:8000"
     networks:
       - appnet
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # MCP server runs with stdio transport, no port needed
+    command: tail -f /dev/null  # Keep container running for docker exec calls
 
   db:
     image: postgres:16-alpine

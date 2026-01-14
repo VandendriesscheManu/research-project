@@ -1,42 +1,70 @@
 import os
 import json
-from fastmcp import Client
+import asyncio
+from datetime import datetime
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+
+def _serialize_history(history: list[dict]) -> str:
+    """
+    Serialize history to JSON, handling datetime objects.
+    """
+    def default_serializer(obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+    
+    # Clean history to only include role and content
+    clean_history = []
+    for item in history:
+        clean_history.append({
+            "role": item.get("role", "user"),
+            "content": item.get("content", "")
+        })
+    
+    return json.dumps(clean_history, default=default_serializer)
 
 
 async def _call_mcp_tool(user_message: str, history: list[dict]) -> str:
     """
-    Call MCP server's generate_marketing_plan tool.
-    Uses FastMCP client to communicate with the server.
+    Call MCP server's generate_marketing_plan tool using stdio transport.
     """
-    mcp_url = os.getenv("MCP_BASE_URL", "http://mcp-server:8000")
-    # Add /mcp/sse for SSE transport endpoint
-    mcp_sse_url = f"{mcp_url}/mcp/sse"
+    # Convert history to JSON string
+    history_json = _serialize_history(history)
     
-    # Convert history to JSON string for tool parameter
-    history_json = json.dumps(history)
+    # Define server parameters for stdio transport
+    server_params = StdioServerParameters(
+        command="docker",
+        args=["exec", "-i", "mcp-server", "python", "server.py"],
+    )
     
-    async with Client(mcp_sse_url) as client:
-        # Call the generate_marketing_plan tool
-        result = await client.call_tool(
-            "generate_marketing_plan",
-            arguments={
-                "user_message": user_message,
-                "history": history_json
-            }
-        )
-        
-        # Extract text from result
-        return result.content[0].text if result.content else ""
+    # Connect to MCP server via stdio
+    async with stdio_client(server_params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            # Initialize the connection
+            await session.initialize()
+            
+            # Call the generate_marketing_plan tool
+            result = await session.call_tool(
+                "generate_marketing_plan",
+                arguments={
+                    "user_message": user_message,
+                    "history": history_json
+                }
+            )
+            
+            # Extract text from result
+            return result.content[0].text if result.content else ""
 
 
 def mcp_generate_marketing_plan(user_message: str, history: list[dict]) -> str:
     """
-    Synchronous wrapper for MCP tool call.
-    Call MCP server to generate marketing plan.
+    Synchronous wrapper for MCP tool call using stdio transport.
     """
-    import asyncio
-    
     try:
         return asyncio.run(_call_mcp_tool(user_message, history))
     except Exception as e:
-        raise Exception(f"MCP client error: {e}")
+        import traceback
+        error_details = traceback.format_exc()
+        raise Exception(f"MCP client error: {str(e)}\n\nFull traceback:\n{error_details}")
