@@ -1,6 +1,6 @@
 """
 LLM Client - Handles communication with different LLM providers
-Supports: Ollama (local), Groq (API), Google Gemini (API), OpenRouter (API)
+Supports: Ollama (local), Groq (API)
 """
 import os
 import requests
@@ -8,7 +8,7 @@ from typing import List, Dict
 
 
 class LLMClient:
-    """Unified client for multiple LLM providers"""
+    """Unified client for Ollama and Groq LLM providers"""
     
     def __init__(self):
         # Read configuration from environment
@@ -17,27 +17,16 @@ class LLMClient:
         
         # Provider-specific configuration
         self.ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+        self.ollama_model = os.getenv("OLLAMA_MODEL", "llama3.2")
         self.groq_api_key = os.getenv("GROQ_API_KEY", "")
-        self.google_api_key = os.getenv("GOOGLE_API_KEY", "")
-        self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY", "")
-        
-        # Validate configuration
-        self._validate_config()
         
         print("=" * 60)
         print(f"🤖 LLM CLIENT INITIALIZED")
         print(f"   Provider: {self.provider.upper()}")
         print(f"   Model: {self.model}")
+        if self.provider != "ollama":
+            print(f"   Fallback: Ollama ({self.ollama_model})")
         print("=" * 60)
-    
-    def _validate_config(self):
-        """Validate that required API keys are present for the selected provider"""
-        if self.provider == "groq" and not self.groq_api_key:
-            print("⚠️  WARNING: GROQ_API_KEY not set, will fail on first request")
-        elif self.provider in ("google", "gemini") and not self.google_api_key:
-            print("⚠️  WARNING: GOOGLE_API_KEY not set, will fail on first request")
-        elif self.provider == "openrouter" and not self.openrouter_api_key:
-            print("⚠️  WARNING: OPENROUTER_API_KEY not set, will fail on first request")
     
     def chat(self, messages: List[Dict[str, str]], temperature: float = 0.7) -> str:
         """
@@ -58,34 +47,44 @@ class LLMClient:
                 return self._call_ollama(messages, temperature)
             elif self.provider == "groq":
                 return self._call_groq(messages, temperature)
-            elif self.provider == "google" or self.provider == "gemini":
-                return self._call_google(messages, temperature)
-            elif self.provider == "openrouter":
-                return self._call_openrouter(messages, temperature)
             else:
-                raise ValueError(f"Unknown LLM provider: {self.provider}")
+                raise ValueError(f"Unknown LLM provider: {self.provider}. Use 'ollama' or 'groq'")
         except Exception as e:
             # If primary provider fails and we're not already using Ollama, fall back
             if self.provider != "ollama":
                 print(f"❌ {self.provider.upper()} failed: {str(e)}")
-                print(f"🔄 Falling back to local Ollama...")
+                print(f"🔄 Falling back to local Ollama ({self.ollama_model})...")
                 try:
-                    return self._call_ollama(messages, temperature)
+                    return self._call_ollama_fallback(messages, temperature)
                 except Exception as fallback_error:
                     print(f"❌ Ollama fallback also failed: {str(fallback_error)}")
-                    raise Exception(f"Both {self.provider} and Ollama fallback failed. Primary error: {str(e)}")
+                    raise Exception(f"Both {self.provider} and Ollama fallback failed. Primary error: {str(e)}, Ollama error: {str(fallback_error)}")
             else:
                 # Already using Ollama, no fallback available
                 raise
     
     def _call_ollama(self, messages: List[Dict], temperature: float) -> str:
-        """Call local Ollama instance"""
+        """Call local Ollama instance with configured model"""
         payload = {
             "model": self.model,
             "messages": messages,
             "stream": False,
             "options": {"temperature": temperature}
         }
+        print(f"🔧 Ollama request: {self.ollama_base_url}/api/chat with model {self.model}")
+        r = requests.post(f"{self.ollama_base_url}/api/chat", json=payload, timeout=120)
+        r.raise_for_status()
+        return r.json()["message"]["content"]
+    
+    def _call_ollama_fallback(self, messages: List[Dict], temperature: float) -> str:
+        """Call local Ollama instance with fallback model"""
+        payload = {
+            "model": self.ollama_model,  # Use the dedicated fallback model
+            "messages": messages,
+            "stream": False,
+            "options": {"temperature": temperature}
+        }
+        print(f"🔧 Ollama fallback request: {self.ollama_base_url}/api/chat with model {self.ollama_model}")
         r = requests.post(f"{self.ollama_base_url}/api/chat", json=payload, timeout=120)
         r.raise_for_status()
         return r.json()["message"]["content"]
@@ -104,62 +103,30 @@ class LLMClient:
             "Content-Type": "application/json"
         }
         payload = {
-            "model": self.model,  # e.g., "llama-3.2-90b-text-preview" or "mixtral-8x7b-32768"
+            "model": self.model,
             "messages": messages,
             "temperature": temperature
         }
-        r = requests.post("https://api.groq.com/openai/v1/chat/completions", 
-                         headers=headers, json=payload, timeout=60)
-        r.raise_for_status()
-        return r.json()["choices"][0]["message"]["content"]
-    
-    def _call_google(self, messages: List[Dict], temperature: float) -> str:
-        """
-        Call Google Gemini API (generous free tier)
-        Get API key at: https://aistudio.google.com/app/apikey
-        Free tier: 15 RPM, 1 million tokens/day
-        """
-        if not self.google_api_key:
-            raise ValueError("GOOGLE_API_KEY not set in environment variables")
         
-        # Convert messages to Gemini format
-        contents = []
-        for msg in messages:
-            role = "user" if msg["role"] in ("user", "system") else "model"
-            contents.append({"role": role, "parts": [{"text": msg["content"]}]})
-        
-        payload = {
-            "contents": contents,
-            "generationConfig": {"temperature": temperature}
-        }
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.google_api_key}"
-        r = requests.post(url, json=payload, timeout=60)
-        r.raise_for_status()
-        return r.json()["candidates"][0]["content"]["parts"][0]["text"]
-    
-    def _call_openrouter(self, messages: List[Dict], temperature: float) -> str:
-        """
-        Call OpenRouter API (aggregates multiple free models)
-        Sign up at: https://openrouter.ai
-        Has various free models available
-        """
-        if not self.openrouter_api_key:
-            raise ValueError("OPENROUTER_API_KEY not set in environment variables")
-        
-        headers = {
-            "Authorization": f"Bearer {self.openrouter_api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost:8000",  # Optional
-        }
-        payload = {
-            "model": self.model,  # e.g., "meta-llama/llama-3.2-3b-instruct:free"
-            "messages": messages,
-            "temperature": temperature
-        }
-        r = requests.post("https://openrouter.ai/api/v1/chat/completions",
-                         headers=headers, json=payload, timeout=60)
-        r.raise_for_status()
-        return r.json()["choices"][0]["message"]["content"]
+        print(f"🔧 Groq request with model: {self.model}")
+        try:
+            r = requests.post("https://api.groq.com/openai/v1/chat/completions", 
+                             headers=headers, json=payload, timeout=60)
+            r.raise_for_status()
+            return r.json()["choices"][0]["message"]["content"]
+        except requests.exceptions.HTTPError as e:
+            # Print the actual error response for debugging
+            error_detail = "No response"
+            if e.response is not None:
+                try:
+                    error_detail = e.response.json()
+                except:
+                    error_detail = e.response.text if e.response.text else "No response body"
+            
+            print(f"❌ Groq API Error Details:")
+            print(f"   Status: {e.response.status_code if e.response else 'Unknown'}")
+            print(f"   Error: {error_detail}")
+            raise Exception(f"Groq API error: {e.response.status_code if e.response else 'Unknown'} - {error_detail}")
 
 
 # Singleton instance
