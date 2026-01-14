@@ -117,8 +117,8 @@ def save_product_brief(session_id: str, brief_data: dict) -> int:
                 brief_data.get('success_metrics')
             )
         )
-        plan_id = cur.fetchone()[0]
-        return plan_id
+        brief_id = cur.fetchone()[0]
+        return brief_id
 
 
 def get_product_brief(session_id: str) -> dict:
