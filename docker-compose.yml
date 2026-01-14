@@ -24,9 +24,13 @@ services:
     container_name: mcp-server
     env_file:
       - ./.env
+    ports:
+      - "8000:8000"
     networks:
       - appnet
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     image: postgres:16-alpine

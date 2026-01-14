@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
 from core.db import init_db, save_message, get_history
-from core.agents import run_marketing_plan_agent
+from core.mcp_client import mcp_generate_marketing_plan
 
 app = FastAPI(title="Marketing Plan Generator API", version="0.1.0")
 
@@ -48,7 +48,8 @@ def chat(req: ChatRequest, _: None = Depends(require_api_key)):
 
         save_message(req.session_id, role="user", content=req.user_message)
 
-        assistant = run_marketing_plan_agent(
+        # Forward to MCP server for AI processing
+        assistant = mcp_generate_marketing_plan(
             user_message=req.user_message,
             history=history_msgs,
         )
@@ -58,4 +59,5 @@ def chat(req: ChatRequest, _: None = Depends(require_api_key)):
         return ChatResponse(session_id=req.session_id, assistant_message=assistant)
 
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
         raise HTTPException(status_code=500, detail=str(e))
