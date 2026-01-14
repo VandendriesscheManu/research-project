@@ -1,7 +1,7 @@
 import os
 from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
-from agents import marketing_agent
+from agents import marketing_agent, field_assistant_agent
 
 load_dotenv()
 
@@ -22,6 +22,23 @@ def generate_marketing_plan(user_message: str, history: str = "[]") -> str:
     This tool delegates to the MarketingAgent.
     """
     return marketing_agent.generate_plan(user_message, history)
+
+
+@mcp.tool()
+def suggest_field_value(field_name: str, context: str = "{}") -> str:
+    """
+    Suggest a value for a specific form field based on already filled fields.
+    
+    Args:
+        field_name: The field to generate a suggestion for
+        context: JSON string of already filled fields
+    
+    Returns:
+        AI-generated suggestion for the field
+    """
+    import json
+    context_dict = json.loads(context) if context else {}
+    return field_assistant_agent.suggest_field_value(field_name, context_dict)
 
 
 # ============================================================================

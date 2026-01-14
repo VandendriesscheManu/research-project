@@ -4,7 +4,7 @@ from datetime import date
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
 from core.db import init_db, save_message, get_history, save_product_brief, get_product_brief
-from core.mcp_client import mcp_generate_marketing_plan
+from core.mcp_client import mcp_generate_marketing_plan, mcp_suggest_field
 
 app = FastAPI(title="Marketing Plan Generator API", version="0.1.0")
 
@@ -150,3 +150,21 @@ def get_brief(session_id: str, _: None = Depends(require_api_key)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+class SuggestFieldRequest(BaseModel):
+    field_name: str
+    context: dict
+
+
+class SuggestFieldResponse(BaseModel):
+    suggestion: str
+
+
+@app.post("/suggest-field", response_model=SuggestFieldResponse)
+def suggest_field(req: SuggestFieldRequest, _: None = Depends(require_api_key)):
+    """Generate AI-powered suggestion for a form field based on context"""
+    try:
+        suggestion = mcp_suggest_field(req.field_name, req.context)
+        return {"suggestion": suggestion}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
