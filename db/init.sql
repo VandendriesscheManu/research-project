@@ -13,25 +13,25 @@ CREATE TABLE IF NOT EXISTS marketing_plans (
   id BIGSERIAL PRIMARY KEY,
   session_id TEXT NOT NULL,
   
-  -- Product Information
+  -- Product Information (only product_name is required)
   product_name TEXT NOT NULL,
-  product_category TEXT NOT NULL,
-  product_features TEXT NOT NULL,
-  product_usp TEXT NOT NULL,
+  product_category TEXT,
+  product_features TEXT,
+  product_usp TEXT,
   product_branding TEXT,
   product_variants TEXT,
   
   -- Target Audience
-  target_primary TEXT NOT NULL,
+  target_primary TEXT,
   target_secondary TEXT,
-  target_demographics TEXT NOT NULL,
-  target_psychographics TEXT NOT NULL,
+  target_demographics TEXT,
+  target_psychographics TEXT,
   target_personas TEXT,
-  target_problems TEXT NOT NULL,
+  target_problems TEXT,
   
   -- Market & Competition
   market_size TEXT,
-  competitors TEXT NOT NULL,
+  competitors TEXT,
   competitor_pricing TEXT,
   competitor_distribution TEXT,
   market_benchmarks TEXT,
@@ -39,17 +39,17 @@ CREATE TABLE IF NOT EXISTS marketing_plans (
   -- Pricing
   production_cost TEXT,
   desired_margin TEXT,
-  suggested_price TEXT NOT NULL,
+  suggested_price TEXT,
   price_elasticity TEXT,
   
   -- Promotion
-  marketing_channels TEXT[] NOT NULL,
+  marketing_channels TEXT[],
   historical_campaigns TEXT,
   marketing_budget TEXT,
-  tone_of_voice TEXT NOT NULL,
+  tone_of_voice TEXT,
   
   -- Distribution
-  distribution_channels TEXT[] NOT NULL,
+  distribution_channels TEXT[],
   logistics TEXT,
   seasonality TEXT,
   
@@ -59,10 +59,10 @@ CREATE TABLE IF NOT EXISTS marketing_plans (
   campaign_timeline TEXT,
   
   -- Goals
-  sales_goals TEXT NOT NULL,
+  sales_goals TEXT,
   market_share_goals TEXT,
   brand_awareness_goals TEXT,
-  success_metrics TEXT NOT NULL,
+  success_metrics TEXT,
   
   -- Generated plan (will be filled after AI generates the plan)
   generated_plan TEXT,

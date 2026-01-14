@@ -124,11 +124,11 @@ if st.session_state.mode == "form":
         st.markdown("### 1️⃣ Product Information")
         col1, col2 = st.columns(2)
         with col1:
-            product_name = st.text_input("Product Name*", placeholder="e.g., EcoBottle Pro")
-            product_category = st.text_input("Category/Type*", placeholder="e.g., Reusable Water Bottles")
+            product_name = st.text_input("Product Name *", placeholder="e.g., EcoBottle Pro", help="Required field")
+            product_category = st.text_input("Category/Type", placeholder="e.g., Reusable Water Bottles")
         with col2:
-            product_features = st.text_area("Key Features & Functionalities*", placeholder="List main features...", height=100)
-            product_usp = st.text_area("USPs (Unique Selling Points)*", placeholder="What makes it unique?", height=100)
+            product_features = st.text_area("Key Features & Functionalities", placeholder="List main features...", height=100)
+            product_usp = st.text_area("USPs (Unique Selling Points)", placeholder="What makes it unique?", height=100)
         
         product_branding = st.text_area("Packaging, Branding & Brand Identity", placeholder="Describe visual identity, packaging design...")
         product_variants = st.text_area("Product Variants or Lines", placeholder="Different sizes, colors, editions...")
@@ -139,13 +139,13 @@ if st.session_state.mode == "form":
         st.markdown("### 2️⃣ Target Audience Information")
         col1, col2 = st.columns(2)
         with col1:
-            target_primary = st.text_area("Primary Target Audience*", placeholder="Main customer segment...", height=80)
+            target_primary = st.text_area("Primary Target Audience", placeholder="Main customer segment...", height=80)
             target_secondary = st.text_area("Secondary Target Audience", placeholder="Additional segments...", height=80)
-            target_demographics = st.text_area("Demographics*", placeholder="Age, gender, location, income...", height=80)
+            target_demographics = st.text_area("Demographics", placeholder="Age, gender, location, income...", height=80)
         with col2:
-            target_psychographics = st.text_area("Psychographics*", placeholder="Interests, lifestyle, buying behavior...", height=80)
+            target_psychographics = st.text_area("Psychographics", placeholder="Interests, lifestyle, buying behavior...", height=80)
             target_personas = st.text_area("Buyer Personas", placeholder="Describe typical customers...", height=80)
-            target_problems = st.text_area("Customer Needs & Problems Solved*", placeholder="Pain points addressed...", height=80)
+            target_problems = st.text_area("Customer Needs & Problems Solved", placeholder="Pain points addressed...", height=80)
         
         st.divider()
         
@@ -154,7 +154,7 @@ if st.session_state.mode == "form":
         col1, col2 = st.columns(2)
         with col1:
             market_size = st.text_input("Market Size & Growth Trends", placeholder="e.g., $5B market, 8% annual growth")
-            competitors = st.text_area("Key Competitors & Products*", placeholder="List main competitors...", height=100)
+            competitors = st.text_area("Key Competitors & Products", placeholder="List main competitors...", height=100)
             competitor_pricing = st.text_area("Competitor Pricing & Positioning", placeholder="How are competitors priced?", height=100)
         with col2:
             competitor_distribution = st.text_area("Competitor Distribution Channels", placeholder="Where do they sell?", height=100)
@@ -169,7 +169,7 @@ if st.session_state.mode == "form":
             production_cost = st.text_input("Production Cost/Cost Price", placeholder="e.g., $12 per unit")
             desired_margin = st.text_input("Desired Margin", placeholder="e.g., 40%")
         with col2:
-            suggested_price = st.text_input("Suggested Price or Price Range*", placeholder="e.g., $25-$30")
+            suggested_price = st.text_input("Suggested Price or Price Range", placeholder="e.g., $25-$30")
             price_elasticity = st.text_area("Price Elasticity & Demand Expectations", placeholder="Expected demand at different price points...")
         
         st.divider()
@@ -179,7 +179,7 @@ if st.session_state.mode == "form":
         col1, col2 = st.columns(2)
         with col1:
             marketing_channels = st.multiselect(
-                "Possible Marketing Channels*",
+                "Possible Marketing Channels",
                 ["Social Media", "Influencer Marketing", "Paid Ads (Google/Meta)", "Email Marketing", 
                  "Content Marketing", "Events", "PR/Media", "SEO", "Affiliate Marketing", "Partnerships"],
                 default=["Social Media", "Content Marketing"]
@@ -187,7 +187,7 @@ if st.session_state.mode == "form":
             historical_campaigns = st.text_area("Historical Campaigns & Results", placeholder="Previous marketing efforts and their outcomes...")
         with col2:
             marketing_budget = st.text_input("Marketing Budget", placeholder="e.g., $50,000 for 6 months")
-            tone_of_voice = st.text_area("Tone of Voice & Key Message*", placeholder="Brand voice and core messaging...")
+            tone_of_voice = st.text_area("Tone of Voice & Key Message", placeholder="Brand voice and core messaging...")
         
         st.divider()
         
@@ -196,7 +196,7 @@ if st.session_state.mode == "form":
         col1, col2 = st.columns(2)
         with col1:
             distribution_channels = st.multiselect(
-                "Available Distribution Channels*",
+                "Available Distribution Channels",
                 ["E-commerce (Own Website)", "Amazon/Marketplaces", "Retail Stores", "Wholesale", 
                  "Direct Sales", "Distributors", "Subscription Model"],
                 default=["E-commerce (Own Website)"]
@@ -222,39 +222,21 @@ if st.session_state.mode == "form":
         st.markdown("### 8️⃣ Goals & KPIs")
         col1, col2 = st.columns(2)
         with col1:
-            sales_goals = st.text_input("Sales Goals*", placeholder="e.g., 10,000 units in first year")
+            sales_goals = st.text_input("Sales Goals", placeholder="e.g., 10,000 units in first year")
             market_share_goals = st.text_input("Market Share Goals", placeholder="e.g., 5% of market")
         with col2:
             brand_awareness_goals = st.text_area("Brand Awareness & Engagement Goals", placeholder="Social followers, website traffic...")
-            success_metrics = st.text_area("Metrics to Measure Success (KPIs)*", placeholder="ROI, conversion rates, CAC, CLV...")
+            success_metrics = st.text_area("Metrics to Measure Success (KPIs)", placeholder="ROI, conversion rates, CAC, CLV...")
         
         st.divider()
         
         # Submit button
-        submitted = st.form_submit_button("🚀 Generate Comprehensive Marketing Plan", use_container_width=True)
+        submitted = st.form_submit_button("� Save & Generate Marketing Plan", use_container_width=True)
         
         if submitted:
-            # Validate required fields
-            required_fields = {
-                "Product Name": product_name,
-                "Product Category": product_category,
-                "Key Features": product_features,
-                "USPs": product_usp,
-                "Primary Target Audience": target_primary,
-                "Demographics": target_demographics,
-                "Psychographics": target_psychographics,
-                "Customer Problems Solved": target_problems,
-                "Key Competitors": competitors,
-                "Suggested Price": suggested_price,
-                "Tone of Voice": tone_of_voice,
-                "Sales Goals": sales_goals,
-                "Success Metrics": success_metrics
-            }
-            
-            missing_fields = [field for field, value in required_fields.items() if not value]
-            
-            if missing_fields:
-                st.error(f"❌ Please fill in these required fields: {', '.join(missing_fields)}")
+            # Only check for product name (minimum requirement)
+            if not product_name:
+                st.error("❌ Please provide at least a Product Name")
             else:
                 # Prepare data for API
                 plan_data = {

@@ -32,36 +32,36 @@ class MarketingPlanRequest(BaseModel):
     session_id: str
     # Product Information
     product_name: str
-    product_category: str
-    product_features: str
-    product_usp: str
+    product_category: Optional[str] = None
+    product_features: Optional[str] = None
+    product_usp: Optional[str] = None
     product_branding: Optional[str] = None
     product_variants: Optional[str] = None
     # Target Audience
-    target_primary: str
+    target_primary: Optional[str] = None
     target_secondary: Optional[str] = None
-    target_demographics: str
-    target_psychographics: str
+    target_demographics: Optional[str] = None
+    target_psychographics: Optional[str] = None
     target_personas: Optional[str] = None
-    target_problems: str
+    target_problems: Optional[str] = None
     # Market & Competition
     market_size: Optional[str] = None
-    competitors: str
+    competitors: Optional[str] = None
     competitor_pricing: Optional[str] = None
     competitor_distribution: Optional[str] = None
     market_benchmarks: Optional[str] = None
     # Pricing
     production_cost: Optional[str] = None
     desired_margin: Optional[str] = None
-    suggested_price: str
+    suggested_price: Optional[str] = None
     price_elasticity: Optional[str] = None
     # Promotion
-    marketing_channels: List[str]
+    marketing_channels: Optional[List[str]] = None
     historical_campaigns: Optional[str] = None
     marketing_budget: Optional[str] = None
-    tone_of_voice: str
+    tone_of_voice: Optional[str] = None
     # Distribution
-    distribution_channels: List[str]
+    distribution_channels: Optional[List[str]] = None
     logistics: Optional[str] = None
     seasonality: Optional[str] = None
     # Timing
@@ -69,10 +69,10 @@ class MarketingPlanRequest(BaseModel):
     seasonal_factors: Optional[str] = None
     campaign_timeline: Optional[str] = None
     # Goals
-    sales_goals: str
+    sales_goals: Optional[str] = None
     market_share_goals: Optional[str] = None
     brand_awareness_goals: Optional[str] = None
-    success_metrics: str
+    success_metrics: Optional[str] = None
 
 
 class MarketingPlanResponse(BaseModel):
