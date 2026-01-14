@@ -26,6 +26,9 @@ services:
     container_name: mcp-server
     env_file:
       - ./.env
+    ports:
+      - "6274:6274"  # MCP inspector UI
+      - "6277:6277"  # MCP proxy server
     networks:
       - appnet
     restart: unless-stopped

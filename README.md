@@ -1,4 +1,1 @@
-"# test-structuur" 
-"# test-sinterklaas" 
-"# test-sinterklaas" 
-"# test-sinterklaas" 
+npx @modelcontextprotocol/inspector docker exec -i mcp-server python server.py
