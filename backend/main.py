@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import date
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
-from core.db import init_db, save_message, get_history, save_marketing_plan, get_marketing_plan
+from core.db import init_db, save_message, get_history, save_product_brief, get_product_brief
 from core.mcp_client import mcp_generate_marketing_plan
 
 app = FastAPI(title="Marketing Plan Generator API", version="0.1.0")
@@ -28,7 +28,7 @@ class ChatResponse(BaseModel):
     assistant_message: str
 
 
-class MarketingPlanRequest(BaseModel):
+class ProductBriefRequest(BaseModel):
     session_id: str
     # Product Information
     product_name: str
@@ -75,9 +75,9 @@ class MarketingPlanRequest(BaseModel):
     success_metrics: Optional[str] = None
 
 
-class MarketingPlanResponse(BaseModel):
+class ProductBriefResponse(BaseModel):
     session_id: str
-    plan_id: int
+    brief_id: int
     message: str
 
 
@@ -117,34 +117,34 @@ def chat(req: ChatRequest, _: None = Depends(require_api_key)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/marketing-plan", response_model=MarketingPlanResponse)
-def create_marketing_plan(req: MarketingPlanRequest, _: None = Depends(require_api_key)):
-    """Store comprehensive marketing plan form data"""
+@app.post("/product-brief", response_model=ProductBriefResponse)
+def create_product_brief(req: ProductBriefRequest, _: None = Depends(require_api_key)):
+    """Store product information for marketing plan generation"""
     try:
         # Convert request to dict
-        plan_data = req.model_dump()
+        brief_data = req.model_dump()
         
         # Save to database
-        plan_id = save_marketing_plan(req.session_id, plan_data)
+        brief_id = save_product_brief(req.session_id, brief_data)
         
-        return MarketingPlanResponse(
+        return ProductBriefResponse(
             session_id=req.session_id,
-            plan_id=plan_id,
-            message="Marketing plan data saved successfully. AI generation will be implemented next."
+            brief_id=brief_id,
+            message="Product information saved successfully. Ready to generate marketing plan."
         )
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to save marketing plan: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to save product brief: {str(e)}")
 
 
-@app.get("/marketing-plan/{session_id}")
-def get_plan(session_id: str, _: None = Depends(require_api_key)):
-    """Retrieve the latest marketing plan for a session"""
+@app.get("/product-brief/{session_id}")
+def get_brief(session_id: str, _: None = Depends(require_api_key)):
+    """Retrieve the latest product brief for a session"""
     try:
-        plan = get_marketing_plan(session_id)
-        if not plan:
-            raise HTTPException(status_code=404, detail="No marketing plan found for this session")
-        return plan
+        brief = get_product_brief(session_id)
+        if not brief:
+            raise HTTPException(status_code=404, detail="No product brief found for this session")
+        return brief
     except HTTPException:
         raise
     except Exception as e:

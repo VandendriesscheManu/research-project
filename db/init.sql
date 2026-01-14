@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 
 CREATE INDEX IF NOT EXISTS idx_chat_session_id ON chat_messages(session_id);
 
--- Marketing Plans table for comprehensive form submissions
-CREATE TABLE IF NOT EXISTS marketing_plans (
+-- Product Briefs table - stores product information for marketing plan generation
+CREATE TABLE IF NOT EXISTS product_briefs (
   id BIGSERIAL PRIMARY KEY,
   session_id TEXT NOT NULL,
   
@@ -64,13 +64,13 @@ CREATE TABLE IF NOT EXISTS marketing_plans (
   brand_awareness_goals TEXT,
   success_metrics TEXT,
   
-  -- Generated plan (will be filled after AI generates the plan)
-  generated_plan TEXT,
+  -- Generated marketing plan (will be filled after AI generates the plan)
+  generated_marketing_plan TEXT,
   
   -- Metadata
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_marketing_plans_session_id ON marketing_plans(session_id);
-CREATE INDEX IF NOT EXISTS idx_marketing_plans_created_at ON marketing_plans(created_at);
+CREATE INDEX IF NOT EXISTS idx_product_briefs_session_id ON product_briefs(session_id);
+CREATE INDEX IF NOT EXISTS idx_product_briefs_created_at ON product_briefs(created_at);

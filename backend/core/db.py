@@ -48,12 +48,12 @@ def get_history(session_id: str) -> list[dict]:
         return list(cur.fetchall())
 
 
-def save_marketing_plan(session_id: str, plan_data: dict) -> int:
-    """Save a comprehensive marketing plan form submission"""
+def save_product_brief(session_id: str, brief_data: dict) -> int:
+    """Save product information for marketing plan generation"""
     with _conn.cursor() as cur:
         cur.execute(
             """
-            INSERT INTO marketing_plans (
+            INSERT INTO product_briefs (
                 session_id,
                 product_name, product_category, product_features, product_usp,
                 product_branding, product_variants,
@@ -121,12 +121,12 @@ def save_marketing_plan(session_id: str, plan_data: dict) -> int:
         return plan_id
 
 
-def get_marketing_plan(session_id: str) -> dict:
-    """Get the latest marketing plan for a session"""
+def get_product_brief(session_id: str) -> dict:
+    """Get the latest product brief for a session"""
     with _conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(
             """
-            SELECT * FROM marketing_plans
+            SELECT * FROM product_briefs
             WHERE session_id = %s
             ORDER BY created_at DESC
             LIMIT 1
@@ -137,14 +137,14 @@ def get_marketing_plan(session_id: str) -> dict:
         return dict(result) if result else None
 
 
-def update_generated_plan(plan_id: int, generated_plan: str):
-    """Update the generated_plan field after AI generates the plan"""
+def update_generated_marketing_plan(brief_id: int, marketing_plan: str):
+    """Update the generated_marketing_plan field after AI generates the plan"""
     with _conn.cursor() as cur:
         cur.execute(
             """
-            UPDATE marketing_plans
-            SET generated_plan = %s, updated_at = NOW()
+            UPDATE product_briefs
+            SET generated_marketing_plan = %s, updated_at = NOW()
             WHERE id = %s
             """,
-            (generated_plan, plan_id)
+            (marketing_plan, brief_id)
         )

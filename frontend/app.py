@@ -116,8 +116,8 @@ with st.sidebar:
 
 # MODE: Full Marketing Plan Form
 if st.session_state.mode == "form":
-    st.subheader("📝 Complete Marketing Plan Generator")
-    st.write("Fill in the form below to generate a comprehensive marketing plan tailored to your product.")
+    st.subheader("📝 Product Information Form")
+    st.write("Fill in product details to generate a comprehensive marketing plan.")
     
     with st.form("marketing_plan_form"):
         # 1. Product Information
@@ -231,7 +231,7 @@ if st.session_state.mode == "form":
         st.divider()
         
         # Submit button
-        submitted = st.form_submit_button("� Save & Generate Marketing Plan", use_container_width=True)
+        submitted = st.form_submit_button("💾 Save Product Info & Generate Marketing Plan", use_container_width=True)
         
         if submitted:
             # Only check for product name (minimum requirement)
@@ -239,7 +239,7 @@ if st.session_state.mode == "form":
                 st.error("❌ Please provide at least a Product Name")
             else:
                 # Prepare data for API
-                plan_data = {
+                brief_data = {
                     "session_id": st.session_state.session_id,
                     "product_name": product_name,
                     "product_category": product_category,
@@ -279,15 +279,15 @@ if st.session_state.mode == "form":
                 }
                 
                 try:
-                    # Call API to save marketing plan
+                    # Call API to save product brief
                     headers = {}
                     if st.session_state.api_key:
                         headers["X-API-KEY"] = st.session_state.api_key
                     
-                    with st.spinner("💾 Saving your marketing plan data..."):
+                    with st.spinner("💾 Saving your product information..."):
                         response = requests.post(
-                            f"{API_BASE_URL}/marketing-plan",
-                            json=plan_data,
+                            f"{API_BASE_URL}/product-brief",
+                            json=brief_data,
                             headers=headers,
                             timeout=30
                         )
@@ -298,15 +298,15 @@ if st.session_state.mode == "form":
                             response.raise_for_status()
                             result = response.json()
                             
-                            st.success(f"✅ Marketing plan saved successfully! (Plan ID: {result['plan_id']})")
+                            st.success(f"✅ Product information saved successfully! (Brief ID: {result['brief_id']})")
                             st.info(f"📝 {result['message']}")
                             
                             # Show collected data
-                            with st.expander("📋 Saved Data Preview"):
-                                st.json(plan_data)
+                            with st.expander("📋 Saved Product Information"):
+                                st.json(brief_data)
                 
                 except requests.exceptions.RequestException as e:
-                    st.error(f"❌ Failed to save marketing plan: {str(e)}")
+                    st.error(f"❌ Failed to save product information: {str(e)}")
                 except Exception as e:
                     st.error(f"❌ An error occurred: {str(e)}")
 
