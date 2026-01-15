@@ -4,11 +4,24 @@ import requests
 import streamlit as st
 from pathlib import Path
 
-# Read the dynamically generated URL from shared/.env.public
+# Read the dynamically generated URL from GitHub Gist
 def get_api_base_url():
-    """Read PUBLIC_API_BASE_URL from shared/.env.public if it exists."""
-    shared_env_file = Path(__file__).parent.parent / "shared" / ".env.public"
+    """Read PUBLIC_API_BASE_URL from GitHub Gist if configured, fallback to env or localhost."""
+    gist_raw_url = os.getenv("GIST_RAW_URL")
     
+    # Try to fetch from Gist first
+    if gist_raw_url:
+        try:
+            response = requests.get(gist_raw_url, timeout=5)
+            if response.status_code == 200:
+                url = response.text.strip()
+                if url:
+                    return url
+        except Exception as e:
+            st.sidebar.warning(f"⚠️ Could not read from Gist: {e}")
+    
+    # Fallback to shared env file (backward compatibility)
+    shared_env_file = Path(__file__).parent.parent / "shared" / ".env.public"
     if shared_env_file.exists():
         try:
             with open(shared_env_file, 'r') as f:
@@ -18,6 +31,7 @@ def get_api_base_url():
         except Exception as e:
             st.sidebar.warning(f"⚠️ Could not read shared env file: {e}")
     
+    # Final fallback
     return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 
 API_BASE_URL = get_api_base_url()

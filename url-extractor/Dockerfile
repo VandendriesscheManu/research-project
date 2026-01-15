@@ -8,8 +8,14 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY extract_url.py .
 
 RUN chmod +x extract_url.py
+
+# Disable Python output buffering for real-time logs
+ENV PYTHONUNBUFFERED=1
 
 CMD ["python", "extract_url.py"]
