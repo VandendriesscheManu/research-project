@@ -9,9 +9,9 @@ st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
 
 # Read the dynamically generated URL from GitHub Gist
 @st.cache_data(ttl=10)  # Cache for 10 seconds, then refresh
-def get_api_base_url():
+def get_api_base_url(custom_gist_url=None):
     """Read PUBLIC_API_BASE_URL from GitHub Gist if configured, fallback to env or localhost."""
-    gist_raw_url = os.getenv("GIST_RAW_URL")
+    gist_raw_url = custom_gist_url or os.getenv("GIST_RAW_URL")
     
     # Try to fetch from Gist first
     if gist_raw_url:
@@ -38,9 +38,6 @@ def get_api_base_url():
     # Final fallback
     return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 
-# Get the current API base URL (refreshes every 10 seconds)
-API_BASE_URL = get_api_base_url()
-
 st.title("📊 Marketing Plan Generator")
 st.caption("AI-powered marketing plan creation: Streamlit → FastAPI → MCP → Groq/Ollama → Postgres")
 
@@ -57,6 +54,13 @@ if "mode" not in st.session_state:
 # Initialize API key from secrets (default) or allow override
 if "api_key" not in st.session_state:
     st.session_state.api_key = st.secrets.get("API_KEY", os.getenv("API_KEY", ""))
+
+# Initialize Gist URL from secrets (default) or allow override
+if "gist_url" not in st.session_state:
+    st.session_state.gist_url = st.secrets.get("GIST_RAW_URL", os.getenv("GIST_RAW_URL", ""))
+
+# Get the current API base URL (refreshes every 10 seconds)
+API_BASE_URL = get_api_base_url(st.session_state.gist_url)
 
 with st.sidebar:
     st.subheader("Settings")
@@ -105,6 +109,29 @@ with st.sidebar:
         st.caption("✅ API key is configured")
     else:
         st.caption("⚠️ No API key configured")
+
+    st.divider()
+    
+    # Gist URL configuration (with override option)
+    st.subheader("🌐 Cloudflare URL Source")
+    gist_url_input = st.text_input(
+        "GitHub Gist Raw URL",
+        value=st.session_state.gist_url,
+        help="Default from Streamlit secrets. Change here to use a different Gist.",
+        placeholder="https://gist.githubusercontent.com/..."
+    )
+    
+    # Update session state if changed
+    if gist_url_input != st.session_state.gist_url:
+        st.session_state.gist_url = gist_url_input
+        st.success("✅ Gist URL updated!")
+        st.rerun()
+    
+    # Show status
+    if st.session_state.gist_url:
+        st.caption("✅ Gist URL is configured")
+    else:
+        st.caption("⚠️ No Gist URL configured")
 
     st.divider()
     
