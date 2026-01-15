@@ -5,6 +5,7 @@ import streamlit as st
 from pathlib import Path
 
 # Read the dynamically generated URL from GitHub Gist
+@st.cache_data(ttl=60)  # Cache for 60 seconds, then refresh
 def get_api_base_url():
     """Read PUBLIC_API_BASE_URL from GitHub Gist if configured, fallback to env or localhost."""
     gist_raw_url = os.getenv("GIST_RAW_URL")
@@ -34,6 +35,7 @@ def get_api_base_url():
     # Final fallback
     return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 
+# Get the current API base URL (refreshes every 60 seconds)
 API_BASE_URL = get_api_base_url()
 
 st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
