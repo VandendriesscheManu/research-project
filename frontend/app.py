@@ -4,6 +4,9 @@ import requests
 import streamlit as st
 from pathlib import Path
 
+# MUST be the first Streamlit command
+st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
+
 # Read the dynamically generated URL from GitHub Gist
 @st.cache_data(ttl=10)  # Cache for 10 seconds, then refresh
 def get_api_base_url():
@@ -35,10 +38,8 @@ def get_api_base_url():
     # Final fallback
     return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 
-# Get the current API base URL (refreshes every 60 seconds)
+# Get the current API base URL (refreshes every 10 seconds)
 API_BASE_URL = get_api_base_url()
-
-st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
 
 st.title("📊 Marketing Plan Generator")
 st.caption("AI-powered marketing plan creation: Streamlit → FastAPI → MCP → Groq/Ollama → Postgres")
