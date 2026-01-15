@@ -129,104 +129,105 @@ with st.sidebar:
     """)
 
 # Full Marketing Plan Form
-    st.subheader("📝 Product Information Form")
-    st.write("Fill in product details to generate a comprehensive marketing plan.")
-    
-    # Initialize field values in session state
-    if "form_data" not in st.session_state:
-        st.session_state.form_data = {}
-    
-    # AI Assistant Section (outside form for button functionality)
-    with st.expander("✨ AI Field Assistant", expanded=False):
-        st.write("Get AI-powered suggestions for any field based on the information you've already provided.")
+st.subheader("📝 Product Information Form")
+st.write("Fill in product details to generate a comprehensive marketing plan.")
+
+# Initialize field values in session state
+if "form_data" not in st.session_state:
+    st.session_state.form_data = {}
+
+# AI Assistant Section - Prominent placement
+st.markdown("---")
+st.subheader("✨ AI Field Assistant")
+st.write("Get AI-powered suggestions for any field based on the information you've already provided.")
+
+# Field selection
+field_options = {
+    "product_category": "Product Category",
+    "product_features": "Key Features",
+    "product_usp": "Unique Selling Points",
+    "product_branding": "Branding & Packaging",
+    "target_primary": "Primary Target Audience",
+    "target_demographics": "Demographics",
+    "target_psychographics": "Psychographics",
+    "competitors": "Key Competitors",
+    "market_size": "Market Size",
+    "marketing_channels": "Marketing Channels",
+    "tone_of_voice": "Tone of Voice",
+    "sales_goals": "Sales Goals"
+}
+
+col1, col2 = st.columns([3, 1])
+with col1:
+    selected_field = st.selectbox(
+        "Select field to get AI suggestion:",
+        options=list(field_options.keys()),
+        format_func=lambda x: field_options[x]
+    )
+with col2:
+    st.write("")  # Spacing
+    st.write("")  # Spacing
+    suggest_button = st.button("✨ Get Suggestion", use_container_width=True)
+
+if suggest_button:
+    if not st.session_state.api_key:
+        st.error("❌ Please configure API key in sidebar")
+    elif not st.session_state.form_data.get("product_name"):
+        st.warning("💡 Fill in at least the Product Name first for better AI suggestions!")
+    else:
+        # Build context from filled fields
+        context = {k: v for k, v in st.session_state.form_data.items() if v}
         
-        # Field selection
-        field_options = {
-            "product_category": "Product Category",
-            "product_features": "Key Features",
-            "product_usp": "Unique Selling Points",
-            "product_branding": "Branding & Packaging",
-            "target_primary": "Primary Target Audience",
-            "target_demographics": "Demographics",
-            "target_psychographics": "Psychographics",
-            "competitors": "Key Competitors",
-            "market_size": "Market Size",
-            "marketing_channels": "Marketing Channels",
-            "tone_of_voice": "Tone of Voice",
-            "sales_goals": "Sales Goals"
-        }
-        
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            selected_field = st.selectbox(
-                "Select field to get AI suggestion:",
-                options=list(field_options.keys()),
-                format_func=lambda x: field_options[x]
-            )
-        with col2:
-            st.write("")  # Spacing
-            st.write("")  # Spacing
-            suggest_button = st.button("✨ Get Suggestion", use_container_width=True)
-        
-        if suggest_button:
-            if not st.session_state.api_key:
-                st.error("❌ Please configure API key in sidebar")
-            elif not st.session_state.form_data.get("product_name"):
-                st.warning("💡 Fill in at least the Product Name first for better AI suggestions!")
-            else:
-                # Build context from filled fields
-                context = {k: v for k, v in st.session_state.form_data.items() if v}
+        try:
+            with st.spinner(f"✨ AI is generating suggestion for {field_options[selected_field]}..."):
+                response = requests.post(
+                    f"{API_BASE_URL}/suggest-field",
+                    json={
+                        "field_name": selected_field,
+                        "context": context
+                    },
+                    headers={"X-API-Key": st.session_state.api_key},
+                    timeout=30
+                )
                 
-                try:
-                    with st.spinner(f"✨ AI is generating suggestion for {field_options[selected_field]}..."):
-                        response = requests.post(
-                            f"{API_BASE_URL}/suggest-field",
-                            json={
-                                "field_name": selected_field,
-                                "context": context
-                            },
-                            headers={"X-API-Key": st.session_state.api_key},
-                            timeout=30
-                        )
+                if response.status_code == 200:
+                    suggestion = response.json()["suggestion"]
+                    
+                    # Extract provider tag if present
+                    content = suggestion
+                    if "[Generated by" in suggestion:
+                        parts = suggestion.split("\n\n", 1)
+                        provider_tag = parts[0]
+                        content = parts[1] if len(parts) > 1 else parts[0]
                         
-                        if response.status_code == 200:
-                            suggestion = response.json()["suggestion"]
-                            
-                            # Extract provider tag if present
-                            content = suggestion
-                            if "[Generated by" in suggestion:
-                                parts = suggestion.split("\n\n", 1)
-                                provider_tag = parts[0]
-                                content = parts[1] if len(parts) > 1 else parts[0]
-                                
-                                # Show provider badge
-                                if "GROQ" in provider_tag:
-                                    st.success(f"⚡ {provider_tag}")
-                                else:
-                                    st.info(f"🔄 {provider_tag}")
-                            
-                            # Display suggestion
-                            st.markdown("**AI Suggestion:**")
-                            st.info(content)
-                            st.caption("💡 Copy this suggestion and paste it into the form field below")
-                            
-                            # Auto-update form data (user can still edit)
-                            st.session_state.form_data[selected_field] = content
-                            st.success("✅ Suggestion stored! Scroll down to see it in the form.")
+                        # Show provider badge
+                        if "GROQ" in provider_tag:
+                            st.success(f"⚡ {provider_tag}")
                         else:
-                            st.error(f"❌ API error: {response.status_code}")
-                except Exception as e:
-                    st.error(f"❌ Error: {str(e)}")
-        
-        st.caption("💡 Tip: Fill in basic fields first (Product Name, Category) for more accurate AI suggestions!")
-    
-    st.divider()
-    
-    # Helper function to update form data
-    def update_field(field_name):
-        def callback():
-            st.session_state.form_data[field_name] = st.session_state[f"input_{field_name}"]
-        return callback
+                            st.info(f"🔄 {provider_tag}")
+                    
+                    # Display suggestion
+                    st.markdown("**AI Suggestion:**")
+                    st.info(content)
+                    st.caption("💡 Copy this suggestion and paste it into the form field below")
+                    
+                    # Auto-update form data (user can still edit)
+                    st.session_state.form_data[selected_field] = content
+                    st.success("✅ Suggestion stored! Scroll down to see it in the form.")
+                else:
+                    st.error(f"❌ API error: {response.status_code}")
+        except Exception as e:
+            st.error(f"❌ Error: {str(e)}")
+
+st.caption("💡 Tip: Fill in basic fields first (Product Name, Category) for more accurate AI suggestions!")
+
+st.divider()
+
+# Helper function to update form data
+def update_field(field_name):
+    def callback():
+        st.session_state.form_data[field_name] = st.session_state[f"input_{field_name}"]
+    return callback
     
     # 1. Product Information
     st.markdown("### 1️⃣ Product Information")
