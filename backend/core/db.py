@@ -23,31 +23,6 @@ def init_db():
     _conn.autocommit = True
 
 
-def save_message(session_id: str, role: str, content: str):
-    with _conn.cursor() as cur:
-        cur.execute(
-            """
-            INSERT INTO chat_messages (session_id, role, content)
-            VALUES (%s, %s, %s)
-            """,
-            (session_id, role, content),
-        )
-
-
-def get_history(session_id: str) -> list[dict]:
-    with _conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute(
-            """
-            SELECT role, content, created_at
-            FROM chat_messages
-            WHERE session_id = %s
-            ORDER BY created_at ASC
-            """,
-            (session_id,),
-        )
-        return list(cur.fetchall())
-
-
 def save_product_brief(session_id: str, brief_data: dict) -> int:
     """Save product information for marketing plan generation"""
     with _conn.cursor() as cur:

@@ -3,8 +3,8 @@ from typing import Optional, List
 from datetime import date
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
-from core.db import init_db, save_message, get_history, save_product_brief, get_product_brief
-from core.mcp_client import mcp_generate_marketing_plan, mcp_suggest_field
+from core.db import init_db, save_product_brief, get_product_brief
+from core.mcp_client import mcp_suggest_field
 
 app = FastAPI(title="Marketing Plan Generator API", version="0.1.0")
 
@@ -16,16 +16,6 @@ if not API_KEY:
 def require_api_key(x_api_key: str = Header(default="")):
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-class ChatRequest(BaseModel):
-    session_id: str
-    user_message: str
-
-
-class ChatResponse(BaseModel):
-    session_id: str
-    assistant_message: str
 
 
 class ProductBriefRequest(BaseModel):
@@ -89,32 +79,6 @@ def _startup():
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
-
-@app.get("/history/{session_id}")
-def history(session_id: str, _: None = Depends(require_api_key)):
-    return {"session_id": session_id, "messages": get_history(session_id)}
-
-
-@app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest, _: None = Depends(require_api_key)):
-    try:
-        history_msgs = get_history(req.session_id)
-
-        save_message(req.session_id, role="user", content=req.user_message)
-
-        # Forward to MCP server for AI processing
-        assistant = mcp_generate_marketing_plan(
-            user_message=req.user_message,
-            history=history_msgs,
-        )
-
-        save_message(req.session_id, role="assistant", content=assistant)
-
-        return ChatResponse(session_id=req.session_id, assistant_message=assistant)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/product-brief", response_model=ProductBriefResponse)
