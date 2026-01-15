@@ -5,7 +5,7 @@ import streamlit as st
 from pathlib import Path
 
 # Read the dynamically generated URL from GitHub Gist
-@st.cache_data(ttl=60)  # Cache for 60 seconds, then refresh
+@st.cache_data(ttl=10)  # Cache for 10 seconds, then refresh
 def get_api_base_url():
     """Read PUBLIC_API_BASE_URL from GitHub Gist if configured, fallback to env or localhost."""
     gist_raw_url = os.getenv("GIST_RAW_URL")
