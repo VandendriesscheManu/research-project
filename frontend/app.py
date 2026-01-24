@@ -228,6 +228,7 @@ st.caption(f"Step {st.session_state.current_step} of {total_steps}")
 
 # AI Assistant info
 st.info("✨ Click the ✨ button next to any field to get AI-powered suggestions based on the information you've already provided.")
+st.caption("💡 Fill in at least the Product Name first for more accurate AI suggestions!")
 
 st.divider()
 
@@ -321,7 +322,7 @@ if st.session_state.current_step == 1:
                          label_visibility="visible")
         with col_cat_btn:
             st.write("")  # Spacing
-            if st.button("✨", key="ai_product_category", help="Get AI suggestion"):
+            if st.button("✨", key="ai_product_category"):
                 get_ai_suggestion("product_category", "Category/Type")
                 
     with col2:
@@ -334,7 +335,7 @@ if st.session_state.current_step == 1:
                         on_change=update_field("product_features"))
         with col_feat_btn:
             st.write("")  # Spacing
-            if st.button("✨", key="ai_product_features", help="Get AI suggestion"):
+            if st.button("✨", key="ai_product_features"):
                 get_ai_suggestion("product_features", "Key Features")
                 
         col_usp, col_usp_btn = st.columns([5, 1])
@@ -346,7 +347,7 @@ if st.session_state.current_step == 1:
                         on_change=update_field("product_usp"))
         with col_usp_btn:
             st.write("")  # Spacing
-            if st.button("✨", key="ai_product_usp", help="Get AI suggestion"):
+            if st.button("✨", key="ai_product_usp"):
                 get_ai_suggestion("product_usp", "Unique Selling Points")
 
     col_brand, col_brand_btn = st.columns([10, 1])
@@ -358,7 +359,7 @@ if st.session_state.current_step == 1:
                     on_change=update_field("product_branding"))
     with col_brand_btn:
         st.write("")  # Spacing
-        if st.button("✨", key="ai_product_branding", help="Get AI suggestion"):
+        if st.button("✨", key="ai_product_branding"):
             get_ai_suggestion("product_branding", "Branding & Packaging")
             
     st.text_area("Product Variants or Lines", 
