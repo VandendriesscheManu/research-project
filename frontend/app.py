@@ -692,27 +692,53 @@ elif st.session_state.current_step == 8:
     st.markdown("### 8️⃣ Goals & KPIs")
     col1, col2 = st.columns(2)
     with col1:
-        st.text_input("Sales Goals", 
-                     value=st.session_state.form_data.get("sales_goals", ""),
-                     placeholder="e.g., 10,000 units in first year",
-                     key="input_sales_goals",
-                     on_change=update_field("sales_goals"))
-        st.text_input("Market Share Goals", 
-                     value=st.session_state.form_data.get("market_share_goals", ""),
-                     placeholder="e.g., 5% of market",
-                     key="input_market_share_goals",
-                     on_change=update_field("market_share_goals"))
+        col_sales, col_sales_btn = st.columns([5, 1])
+        with col_sales:
+            st.text_input("Sales Goals", 
+                         value=st.session_state.form_data.get("sales_goals", ""),
+                         placeholder="e.g., 10,000 units in first year",
+                         key="input_sales_goals",
+                         on_change=update_field("sales_goals"))
+        with col_sales_btn:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            if st.button("✨", key="btn_sales_goals", help="AI suggestion"):
+                get_ai_suggestion("sales_goals", "Sales Goals")
+        
+        col_market, col_market_btn = st.columns([5, 1])
+        with col_market:
+            st.text_input("Market Share Goals", 
+                         value=st.session_state.form_data.get("market_share_goals", ""),
+                         placeholder="e.g., 5% of market",
+                         key="input_market_share_goals",
+                         on_change=update_field("market_share_goals"))
+        with col_market_btn:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            if st.button("✨", key="btn_market_share_goals", help="AI suggestion"):
+                get_ai_suggestion("market_share_goals", "Market Share Goals")
     with col2:
-        st.text_area("Brand Awareness & Engagement Goals", 
-                    value=st.session_state.form_data.get("brand_awareness_goals", ""),
-                    placeholder="Social followers, website traffic...",
-                    key="input_brand_awareness_goals",
-                    on_change=update_field("brand_awareness_goals"))
-        st.text_area("Metrics to Measure Success (KPIs)", 
-                    value=st.session_state.form_data.get("success_metrics", ""),
-                    placeholder="ROI, conversion rates, CAC, CLV...",
-                    key="input_success_metrics",
-                    on_change=update_field("success_metrics"))
+        col_brand, col_brand_btn = st.columns([5, 1])
+        with col_brand:
+            st.text_area("Brand Awareness & Engagement Goals", 
+                        value=st.session_state.form_data.get("brand_awareness_goals", ""),
+                        placeholder="Social followers, website traffic...",
+                        key="input_brand_awareness_goals",
+                        on_change=update_field("brand_awareness_goals"))
+        with col_brand_btn:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            if st.button("✨", key="btn_brand_awareness_goals", help="AI suggestion"):
+                get_ai_suggestion("brand_awareness_goals", "Brand Awareness & Engagement Goals")
+        
+        col_kpi, col_kpi_btn = st.columns([5, 1])
+        with col_kpi:
+            st.text_area("Metrics to Measure Success (KPIs)", 
+                        value=st.session_state.form_data.get("success_metrics", ""),
+                        placeholder="ROI, conversion rates, CAC, CLV...",
+                        key="input_success_metrics",
+                        on_change=update_field("success_metrics"))
+        with col_kpi_btn:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            if st.button("✨", key="btn_success_metrics", help="AI suggestion"):
+                get_ai_suggestion("success_metrics", "Metrics to Measure Success (KPIs)")
 
 st.divider()
 
