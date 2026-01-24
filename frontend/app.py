@@ -92,17 +92,6 @@ with st.sidebar:
     # Display URL with /docs for user reference
     display_url = f"{API_BASE_URL.rstrip('/')}/docs" if API_BASE_URL else "Not configured"
     st.write("API:", display_url)
-    
-    # Manual refresh button for API URL
-    col_refresh1, col_refresh2 = st.columns([3, 1])
-    with col_refresh2:
-        if st.button("🔄", help="Refresh API URL from Gist", use_container_width=True):
-            get_api_base_url.clear()
-            st.success("✅ Refreshed!")
-            st.rerun()
-    with col_refresh1:
-        st.caption("↑ Click to refresh API URL")
-    
     st.write("Session ID:", st.session_state.session_id[:8] + "...")
     if st.session_state.brief_id:
         st.write("Brief ID:", st.session_state.brief_id)
