@@ -252,7 +252,7 @@ def get_ai_suggestion(field_name, field_label):
     context = {k: v for k, v in st.session_state.form_data.items() if v}
     
     try:
-        with st.spinner(f"✨ AI is generating suggestion for {field_label}..."):
+        with st.spinner("✨ Generating AI suggestion..."):
             response = requests.post(
                 f"{API_BASE_URL}/suggest-field",
                 json={
@@ -322,7 +322,7 @@ if st.session_state.current_step == 1:
                          label_visibility="visible")
         with col_cat_btn:
             st.write("")  # Spacing
-            if st.button("✨", key="ai_product_category"):
+            if st.button("✨", key="ai_product_category", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("product_category", "Category/Type")
                 
     with col2:
@@ -335,7 +335,7 @@ if st.session_state.current_step == 1:
                         on_change=update_field("product_features"))
         with col_feat_btn:
             st.write("")  # Spacing
-            if st.button("✨", key="ai_product_features"):
+            if st.button("✨", key="ai_product_features", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("product_features", "Key Features")
                 
         col_usp, col_usp_btn = st.columns([5, 1])
@@ -347,7 +347,7 @@ if st.session_state.current_step == 1:
                         on_change=update_field("product_usp"))
         with col_usp_btn:
             st.write("")  # Spacing
-            if st.button("✨", key="ai_product_usp"):
+            if st.button("✨", key="ai_product_usp", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("product_usp", "Unique Selling Points")
 
     col_brand, col_brand_btn = st.columns([10, 1])
@@ -359,7 +359,7 @@ if st.session_state.current_step == 1:
                     on_change=update_field("product_branding"))
     with col_brand_btn:
         st.write("")  # Spacing
-        if st.button("✨", key="ai_product_branding"):
+        if st.button("✨", key="ai_product_branding", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
             get_ai_suggestion("product_branding", "Branding & Packaging")
             
     st.text_area("Product Variants or Lines", 
