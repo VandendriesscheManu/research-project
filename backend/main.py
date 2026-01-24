@@ -314,15 +314,32 @@ def get_plan(brief_id: int, _: None = Depends(require_api_key)):
     try:
         plan = get_marketing_plan(brief_id)
         if not plan:
-            raise HTTPException(status_code=404, detail="No marketing plan found for this brief")
+            # Plan doesn't exist yet - check if brief exists
+            brief = get_product_brief_by_id(brief_id)
+            if brief:
+                # Brief exists but plan doesn't - still processing
+                raise HTTPException(
+                    status_code=202, 
+                    detail="Marketing plan is still being generated. Please try again in a moment."
+                )
+            else:
+                # Brief doesn't exist
+                raise HTTPException(status_code=404, detail="Product brief not found")
         
         # Parse JSON data
-        plan['plan_data'] = json.loads(plan['plan_data']) if isinstance(plan['plan_data'], str) else plan['plan_data']
+        if isinstance(plan.get('plan_data'), str):
+            try:
+                plan['plan_data'] = json.loads(plan['plan_data'])
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=500, detail="Invalid plan data in database")
+        
         return plan
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        error_details = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"Error retrieving plan: {str(e)}\n\n{error_details}")
 
 
 def get_product_brief_by_id(brief_id: int) -> dict:
@@ -332,14 +349,6 @@ def get_product_brief_by_id(brief_id: int) -> dict:
     
     with _conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT * FROM product_briefs WHERE id = %s", (brief_id,))
-        resu# Check if brief exists but plan doesn't
-            brief = get_product_brief_by_id(brief_id)
-            if brief:
-                raise HTTPException(
-                    status_code=202, 
-                    detail="Marketing plan is still being generated. Please try again in a moment."
-                )
-            else:
-                raise HTTPException(status_code=404, detail="Product brief not found
+        result = cur.fetchone()
         return dict(result) if result else None
 

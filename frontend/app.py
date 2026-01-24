@@ -719,11 +719,21 @@ if st.session_state.get("brief_saved") and st.session_state.brief_id:
                                     elif plan_response.status_code == 202:
                                         # Still processing, continue polling
                                         continue
-                                    else:
-                                        st.error(f"Error checking status: {plan_response.status_code}")
+                                    elif plan_response.status_code == 404:
+                                        st.error("❌ Product brief not found")
                                         break
-                                except requests.exceptions.RequestException:
+                                    else:
+                                        # Show detailed error
+                                        try:
+                                            error_detail = plan_response.json().get('detail', plan_response.text)
+                                        except:
+                                            error_detail = plan_response.text[:200]
+                                        st.error(f"❌ Error checking status ({plan_response.status_code}): {error_detail}")
+                                        break
+                                except requests.exceptions.RequestException as req_err:
                                     # Continue polling on network errors
+                                    if attempt >= max_attempts - 1:
+                                        st.error(f"❌ Network error: {str(req_err)}")
                                     continue
                             
                             if attempt >= max_attempts:
