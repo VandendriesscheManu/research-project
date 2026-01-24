@@ -644,11 +644,7 @@ elif st.session_state.current_step == 6:
         with col_seas_btn:
             st.write("")
             if st.button("✨", key="ai_seasonality", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
-                get_ai_suggestion("seasonality", "Seasonal Availability") 
-                    value=st.session_state.form_data.get("seasonality", ""),
-                    placeholder="Seasonal factors, limited editions...",
-                    key="input_seasonality",
-                    on_change=update_field("seasonality"))
+                get_ai_suggestion("seasonality", "Seasonal Availability")
 
 elif st.session_state.current_step == 7:
     # 7. Timing & Launch
