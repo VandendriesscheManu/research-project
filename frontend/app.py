@@ -621,13 +621,30 @@ elif st.session_state.current_step == 6:
         )
         st.session_state.form_data["distribution_channels"] = selected_dist
         
-        st.text_area("Logistical Considerations & Capacity", 
-                    value=st.session_state.form_data.get("logistics", ""),
-                    placeholder="Shipping, warehousing, fulfillment...",
-                    key="input_logistics",
-                    on_change=update_field("logistics"))
+        col_log, col_log_btn = st.columns([5, 1])
+        with col_log:
+            st.text_area("Logistical Considerations & Capacity", 
+                        value=st.session_state.form_data.get("logistics", ""),
+                        placeholder="Shipping, warehousing, fulfillment...",
+                        key="input_logistics",
+                        on_change=update_field("logistics"))
+        with col_log_btn:
+            st.write("")
+            if st.button("✨", key="ai_logistics", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("logistics", "Logistical Considerations")
+                
     with col2:
-        st.text_area("Seasonal Availability or Special Launches", 
+        col_seas, col_seas_btn = st.columns([5, 1])
+        with col_seas:
+            st.text_area("Seasonal Availability or Special Launches", 
+                        value=st.session_state.form_data.get("seasonality", ""),
+                        placeholder="Seasonal factors, limited editions...",
+                        key="input_seasonality",
+                        on_change=update_field("seasonality"))
+        with col_seas_btn:
+            st.write("")
+            if st.button("✨", key="ai_seasonality", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("seasonality", "Seasonal Availability") 
                     value=st.session_state.form_data.get("seasonality", ""),
                     placeholder="Seasonal factors, limited editions...",
                     key="input_seasonality",
