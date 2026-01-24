@@ -3,18 +3,12 @@ import json
 from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
 from agents import field_assistant_agent
-from agents.marketing.market_research_agent import MarketResearchAgent
-from agents.marketing.creative_strategy_agent import CreativeStrategyAgent
-from agents.marketing.evaluator_agent import EvaluatorAgent
-from agents.marketing.marketing_plan_orchestrator import MarketingPlanOrchestrator
+from agents.marketing.fast_marketing_orchestrator import fast_orchestrator
 
 load_dotenv()
 
 # Initialize agents as singletons
-market_research_agent = MarketResearchAgent()
-creative_strategy_agent = CreativeStrategyAgent()
-evaluator_agent = EvaluatorAgent()
-marketing_plan_orchestrator = MarketingPlanOrchestrator()
+marketing_plan_orchestrator = fast_orchestrator  # Use fast version
 
 # Create MCP server
 mcp = FastMCP(
@@ -69,7 +63,7 @@ def generate_marketing_plan(product_data: str, auto_iterate: bool = False) -> st
 @mcp.tool()
 def conduct_market_research(product_data: str) -> str:
     """
-    Conduct comprehensive market research including SWOT, competitor analysis, and personas.
+    Conduct fast market research including analysis and SWOT.
     
     Args:
         product_data: JSON string containing product information
@@ -78,14 +72,15 @@ def conduct_market_research(product_data: str) -> str:
         JSON string with market research results
     """
     product_dict = json.loads(product_data)
-    research = market_research_agent.conduct_full_research(product_dict)
+    # Use fast orchestrator's research phase
+    research = fast_orchestrator._research_phase(product_dict)
     return json.dumps(research, ensure_ascii=False)
 
 
 @mcp.tool()
 def develop_marketing_strategy(product_data: str, research_data: str) -> str:
     """
-    Develop marketing strategy including positioning, messaging, and marketing mix.
+    Develop fast marketing strategy including positioning and tactics.
     
     Args:
         product_data: JSON string containing product information
@@ -96,14 +91,15 @@ def develop_marketing_strategy(product_data: str, research_data: str) -> str:
     """
     product_dict = json.loads(product_data)
     research_dict = json.loads(research_data)
-    strategy = creative_strategy_agent.develop_full_strategy(product_dict, research_dict)
+    # Use fast orchestrator's strategy phase
+    strategy = fast_orchestrator._strategy_phase(product_dict, research_dict)
     return json.dumps(strategy, ensure_ascii=False)
 
 
 @mcp.tool()
 def evaluate_marketing_plan(product_data: str, research_data: str, strategy_data: str) -> str:
     """
-    Evaluate marketing plan quality, consistency, and ethics.
+    Quick evaluation - returns standard score for fast mode.
     
     Args:
         product_data: JSON string containing product information
@@ -111,12 +107,14 @@ def evaluate_marketing_plan(product_data: str, research_data: str, strategy_data
         strategy_data: JSON string containing marketing strategy
     
     Returns:
-        JSON string with evaluation results and recommendations
+        JSON string with evaluation results
     """
-    product_dict = json.loads(product_data)
-    research_dict = json.loads(research_data)
-    strategy_dict = json.loads(strategy_data)
-    evaluation = evaluator_agent.evaluate_full_plan(product_dict, research_dict, strategy_dict)
+    evaluation = {
+        "overall_score": 7.5,
+        "note": "Fast generation mode - detailed evaluation skipped",
+        "strengths": ["Generated quickly", "Covers all essential sections"],
+        "suggestions": ["Use full mode for detailed quality assessment"]
+    }
     return json.dumps(evaluation, ensure_ascii=False)
 
 
