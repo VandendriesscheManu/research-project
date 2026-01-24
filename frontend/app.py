@@ -162,6 +162,57 @@ with st.sidebar:
 st.subheader("📝 Product Information Form")
 st.write("Fill in product details to generate a comprehensive marketing plan.")
 
+# Demo Mode Button
+col_demo1, col_demo2 = st.columns([1, 4])
+with col_demo1:
+    if st.button("🎬 Fill Demo Data", use_container_width=True, help="Auto-fill all fields with demo data for presentation"):
+        st.session_state.form_data = {
+            "product_name": "EcoBottle Pro",
+            "product_category": "Reusable Smart Water Bottles",
+            "product_features": "• Temperature display (hot/cold indicator)\n• Double-wall vacuum insulation (keeps drinks cold 24h, hot 12h)\n• Leak-proof lid with one-hand operation\n• BPA-free stainless steel\n• Built-in UV-C sterilization\n• Wireless charging base\n• Eco-friendly materials (recycled steel)",
+            "product_usp": "• Only smart bottle with UV-C self-cleaning\n• 100% sustainable materials\n• Temperature monitoring via app\n• Lifetime warranty\n• Carbon-neutral production",
+            "product_branding": "Modern minimalist design with matte finish. Available in 5 nature-inspired colors (Ocean Blue, Forest Green, Stone Gray, Sunset Orange, Arctic White). Premium feel with subtle logo embossing. Recyclable packaging with zero plastic.",
+            "product_variants": "• Standard (500ml) - $29.99\n• Large (750ml) - $34.99\n• XL (1L) - $39.99\n• Limited Edition Artist Series - $49.99",
+            "target_primary": "Environmentally conscious millennials and Gen Z (25-40 years) who value sustainability, health, and technology",
+            "target_secondary": "Fitness enthusiasts, office workers, outdoor adventurers",
+            "target_demographics": "Age: 25-40, Income: $40k-$80k, Urban dwellers, College-educated, Tech-savvy, 60% female / 40% male",
+            "target_psychographics": "Values: sustainability, health, innovation. Lifestyle: active, eco-conscious, early tech adopters. Interests: fitness, hiking, yoga, zero-waste living. Online shoppers who research before buying.",
+            "target_personas": "Sarah (32): Marketing manager, gym-goer, reduces plastic waste\nDavid (28): Software developer, hiker, loves gadgets\nEmily (35): Yoga instructor, sustainability advocate",
+            "target_problems": "• Plastic pollution concerns\n• Forgetting to clean water bottles\n• Drinks not staying at desired temperature\n• Low-quality bottles leaking or breaking\n• Lack of temperature awareness",
+            "market_size": "$8.4 billion global reusable bottle market, growing 6.2% annually. Sustainability-focused segment growing at 12% CAGR.",
+            "competitors": "• Hydro Flask ($30-45) - market leader, no smart features\n• LARQ ($95-150) - UV cleaning, premium pricing\n• S'well ($25-45) - fashion-focused, no tech\n• Yeti ($30-50) - durability-focused\n• CamelBak ($20-35) - sports-focused",
+            "competitor_pricing": "Premium segment: $25-$50. Smart bottles: $50-$150. Our positioning: affordable smart bottle at $30-$40.",
+            "competitor_distribution": "REI, Amazon, Target, Whole Foods, direct-to-consumer websites, specialty outdoor stores",
+            "market_benchmarks": "Average customer acquisition cost: $15-25. Conversion rate: 2-4%. Email open rate: 18-22%. Social media engagement: 3-5%.",
+            "production_cost": "$14 per unit (includes manufacturing, materials, packaging)",
+            "desired_margin": "50% gross margin",
+            "suggested_price": "$29.99 (standard), $34.99 (large), $39.99 (XL)",
+            "price_elasticity": "Price-sensitive market. At $25: high volume but low margin. At $35+: lower volume but competing with premium brands. Sweet spot: $28-32.",
+            "marketing_channels": ["Social Media", "Influencer Marketing", "Content Marketing", "Email Marketing", "Paid Ads (Google/Meta)", "Partnerships"],
+            "historical_campaigns": "Beta launch campaign (Q4 2025): 500 units sold via Instagram ads, 4.2% conversion, $18 CAC. Influencer partnership test: 2 micro-influencers, 12k reach, 250 clicks.",
+            "marketing_budget": "$85,000 for 6-month launch period (pre-launch: $25k, launch: $40k, post-launch: $20k)",
+            "tone_of_voice": "Friendly, inspiring, eco-conscious. Key messages: 'Hydrate sustainably', 'Smart hydration for a better planet', 'Clean water, clean conscience'",
+            "distribution_channels": ["E-commerce (Own Website)", "Amazon/Marketplaces", "Retail Stores"],
+            "logistics": "Warehouse in California. 2-3 day US shipping. International via DHL. Initial inventory: 5,000 units. Dropshipping partner for EU market.",
+            "seasonality": "Peak: January (New Year resolutions), April-May (spring fitness), September (back-to-school). Launch: March 2026 (capitalize on spring momentum).",
+            "launch_date": "2026-03-15",
+            "launch_phases": "Phase 1 (Feb 1-28): Pre-launch teaser, early bird sign-ups\nPhase 2 (Mar 1-14): Soft launch to email list\nPhase 3 (Mar 15): Public launch\nPhase 4 (Mar 16-Apr 30): Scaling phase",
+            "sales_goals": "• Month 1: 1,000 units ($30k revenue)\n• Month 3: 2,500 units ($75k revenue)\n• Month 6: 5,000 units ($150k revenue)\n• Year 1: 25,000 units ($750k revenue)",
+            "kpi_tracking": "Daily: website traffic, conversion rate, ad spend ROI\nWeekly: email list growth, social engagement\nMonthly: revenue, CAC, LTV, inventory levels",
+            "internal_resources": "Team: 1 founder, 1 marketing manager, 1 designer (freelance), 2 part-time customer service. Tools: Shopify, Klaviyo, Meta Ads Manager, Google Analytics.",
+            "external_resources": "• 3D product rendering agency\n• PR firm for launch\n• 5 micro-influencers (10k-50k followers)\n• Meta Ads consultant",
+            "company_context": "Sustainability-first startup founded in 2025. Mission: reduce single-use plastic. Previous crowdfunding success: $120k raised on Kickstarter for prototype.",
+            "product_development_stage": "Manufacturing complete. First batch ready Feb 2026. All certifications obtained (FDA, EU compliance).",
+            "regulatory_compliance": "FDA food-safe certified, BPA-free, EU REACH compliant, Prop 65 compliant, FCC certified (wireless charging)",
+            "sustainability_certificates": "Certified B Corporation (pending), Carbon Neutral certified, 1% for the Planet member, Ocean Cleanup partner"
+        }
+        st.success("✅ Demo data loaded! Scroll through all 8 steps to see the filled fields.")
+        st.balloons()
+        st.rerun()
+
+with col_demo2:
+    st.caption("👆 Use demo mode for quick presentations without typing")
+
 # Initialize field values in session state
 if "form_data" not in st.session_state:
     st.session_state.form_data = {}
