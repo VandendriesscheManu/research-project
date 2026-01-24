@@ -656,7 +656,7 @@ if st.session_state.get("brief_saved") and st.session_state.brief_id:
                             "auto_iterate": auto_iterate
                         },
                         headers=headers,
-                        timeout=600  # 10 minutes timeout
+                        timeout=30  # Short timeout since we get immediate response
                     )
                     
                     if response.status_code == 401:
@@ -669,26 +669,67 @@ if st.session_state.get("brief_saved") and st.session_state.brief_id:
                         response.raise_for_status()
                         result = response.json()
                         
-                        # Save plan info to session state
-                        st.session_state.plan_id = result.get('plan_id')
-                        st.session_state.quality_score = result.get('quality_score', 0)
-                        st.session_state.plan_generated = True
-                        
-                        status_container.empty()
-                        
-                        # Success message with score
-                        st.success(f"✅ Marketing Plan Generated Successfully!")
-                        
-                        # Display quality score
-                        score = result.get('quality_score', 0)
-                        if score >= 8.0:
-                            st.success(f"🌟 **Quality Score: {score:.1f}/10** - Excellent!")
-                        elif score >= 7.0:
-                            st.info(f"👍 **Quality Score: {score:.1f}/10** - Good!")
+                        if result.get('status') == 'processing':
+                            # Background task started, now poll for completion
+                            status_container.info("✅ Generation started! Polling for completion...")
+                            
+                            import time
+                            max_attempts = 60  # 5 minutes (5 second intervals)
+                            attempt = 0
+                            
+                            while attempt < max_attempts:
+                                time.sleep(5)
+                                attempt += 1
+                                
+                                # Update status message
+                                elapsed = attempt * 5
+                                status_container.info(f"⏳ Generating plan... ({elapsed}s elapsed)")
+                                
+                                # Check if plan is ready
+                                try:
+                                    plan_response = requests.get(
+                                        f"{API_BASE_URL}/marketing-plan/{st.session_state.brief_id}",
+                                        headers=headers,
+                                        timeout=10
+                                    )
+                                    
+                                    if plan_response.status_code == 200:
+                                        # Plan is ready!
+                                        plan_data = plan_response.json()
+                                        st.session_state.plan_id = plan_data.get('id')
+                                        st.session_state.quality_score = plan_data.get('quality_score', 0)
+                                        st.session_state.plan_generated = True
+                                        
+                                        status_container.empty()
+                                        
+                                        # Success message with score
+                                        st.success(f"✅ Marketing Plan Generated Successfully!")
+                                        
+                                        # Display quality score
+                                        score = plan_data.get('quality_score', 0)
+                                        if score >= 8.0:
+                                            st.success(f"🌟 **Quality Score: {score:.1f}/10** - Excellent!")
+                                        elif score >= 7.0:
+                                            st.info(f"👍 **Quality Score: {score:.1f}/10** - Good!")
+                                        else:
+                                            st.warning(f"💡 **Quality Score: {score:.1f}/10** - Consider enabling Auto-Improve")
+                                        
+                                        st.info(f"📋 Plan ID: {plan_data.get('id')} | Brief ID: {st.session_state.brief_id}")
+                                        break
+                                    elif plan_response.status_code == 202:
+                                        # Still processing, continue polling
+                                        continue
+                                    else:
+                                        st.error(f"Error checking status: {plan_response.status_code}")
+                                        break
+                                except requests.exceptions.RequestException:
+                                    # Continue polling on network errors
+                                    continue
+                            
+                            if attempt >= max_attempts:
+                                st.warning("⏱️ Plan generation is taking longer than expected. Check back in a few minutes or view backend logs.")
                         else:
-                            st.warning(f"💡 **Quality Score: {score:.1f}/10** - Consider enabling Auto-Improve")
-                        
-                        st.info(f"📋 Plan ID: {result.get('plan_id')} | Brief ID: {result.get('brief_id')}")
+                            st.error(f"Unexpected status: {result.get('status')}")
                         
             except requests.exceptions.Timeout:
                 st.error("⏱️ Request timed out. The plan generation is taking longer than expected. Please check the backend logs.")

@@ -173,19 +173,47 @@ class GenerateMarketingPlanRequest(BaseModel):
 
 class GenerateMarketingPlanResponse(BaseModel):
     brief_id: int  # Always return as int
-    plan_id: int
-    status: str
-    quality_score: float
+    plan_id: Optional[int] = None
+    status: str  # "processing", "completed", "failed"
+    quality_score: Optional[float] = None
     message: str
+    error: Optional[str] = None
+
+
+def _generate_plan_background(brief_id_int: int, product_data: dict, auto_iterate: bool):
+    """Background task to generate marketing plan"""
+    try:
+        from core.mcp_client import mcp_generate_marketing_plan
+        
+        # Generate marketing plan via MCP
+        marketing_plan_json = mcp_generate_marketing_plan(product_data, auto_iterate)
+        
+        if not marketing_plan_json or marketing_plan_json.strip() == "":
+            print(f"ERROR: MCP server returned empty response for brief {brief_id_int}")
+            return
+        
+        try:
+            marketing_plan = json.loads(marketing_plan_json)
+        except json.JSONDecodeError as json_err:
+            print(f"ERROR: Invalid JSON from MCP server for brief {brief_id_int}: {json_err}")
+            return
+        
+        # Save to database
+        quality_score = marketing_plan.get('evaluation', {}).get('overall_score', 0)
+        plan_id = save_marketing_plan(brief_id_int, marketing_plan_json, quality_score)
+        
+        print(f"SUCCESS: Marketing plan generated for brief {brief_id_int}, plan_id {plan_id}, score {quality_score}")
+        
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"ERROR: Failed to generate plan for brief {brief_id_int}: {str(e)}\n{error_details}")
 
 
 @app.post("/generate-marketing-plan", response_model=GenerateMarketingPlanResponse)
-def generate_marketing_plan(req: GenerateMarketingPlanRequest, _: None = Depends(require_api_key)):
-    """Generate a complete marketing plan from product brief"""
+def generate_marketing_plan(req: GenerateMarketingPlanRequest, background_tasks: BackgroundTasks, _: None = Depends(require_api_key)):
+    """Generate a complete marketing plan from product brief (async via background task)"""
     try:
-        # Import MCP client function
-        from core.mcp_client import mcp_generate_marketing_plan
-        
         # Try to convert brief_id to int, if it fails assume it's a session_id (UUID)
         try:
             brief_id_int = int(req.brief_id)
@@ -260,31 +288,16 @@ def generate_marketing_plan(req: GenerateMarketingPlanRequest, _: None = Depends
         if not product_data.get("product_name"):
             raise HTTPException(status_code=422, detail="Product name is required to generate marketing plan")
         
-        # Generate marketing plan via MCP
-        marketing_plan_json = mcp_generate_marketing_plan(product_data, req.auto_iterate)
+        # Start background task
+        background_tasks.add_task(_generate_plan_background, brief_id_int, product_data, req.auto_iterate)
         
-        # Validate the response is valid JSON
-        if not marketing_plan_json or marketing_plan_json.strip() == "":
-            raise HTTPException(status_code=500, detail="MCP server returned empty response")
-        
-        try:
-            marketing_plan = json.loads(marketing_plan_json)
-        except json.JSONDecodeError as json_err:
-            raise HTTPException(
-                status_code=500, 
-                detail=f"Invalid JSON response from MCP server: {str(json_err)}. Response: {marketing_plan_json[:200]}"
-            )
-        
-        # Save to database
-        quality_score = marketing_plan.get('evaluation', {}).get('overall_score', 0)
-        plan_id = save_marketing_plan(brief_id_int, marketing_plan_json, quality_score)
-        
+        # Return immediately
         return GenerateMarketingPlanResponse(
             brief_id=brief_id_int,
-            plan_id=plan_id,
-            status="completed",
-            quality_score=quality_score,
-            message="Marketing plan generated successfully"
+            plan_id=None,
+            status="processing",
+            quality_score=None,
+            message="Marketing plan generation started. Use GET /marketing-plan/{brief_id} to check status."
         )
     
     except HTTPException:
@@ -292,7 +305,7 @@ def generate_marketing_plan(req: GenerateMarketingPlanRequest, _: None = Depends
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
-        raise HTTPException(status_code=500, detail=f"Failed to generate marketing plan: {str(e)}\n\nDetails:\n{error_details}")
+        raise HTTPException(status_code=500, detail=f"Failed to start marketing plan generation: {str(e)}\n\nDetails:\n{error_details}")
 
 
 @app.get("/marketing-plan/{brief_id}")
@@ -319,6 +332,14 @@ def get_product_brief_by_id(brief_id: int) -> dict:
     
     with _conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT * FROM product_briefs WHERE id = %s", (brief_id,))
-        result = cur.fetchone()
+        resu# Check if brief exists but plan doesn't
+            brief = get_product_brief_by_id(brief_id)
+            if brief:
+                raise HTTPException(
+                    status_code=202, 
+                    detail="Marketing plan is still being generated. Please try again in a moment."
+                )
+            else:
+                raise HTTPException(status_code=404, detail="Product brief not found
         return dict(result) if result else None
 
