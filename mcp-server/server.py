@@ -3,14 +3,18 @@ import json
 from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
 from agents import field_assistant_agent
-from agents.marketing import (
-    market_research_agent,
-    creative_strategy_agent,
-    evaluator_agent,
-    marketing_plan_orchestrator
-)
+from agents.marketing.market_research_agent import MarketResearchAgent
+from agents.marketing.creative_strategy_agent import CreativeStrategyAgent
+from agents.marketing.evaluator_agent import EvaluatorAgent
+from agents.marketing.marketing_plan_orchestrator import MarketingPlanOrchestrator
 
 load_dotenv()
+
+# Initialize agents as singletons
+market_research_agent = MarketResearchAgent()
+creative_strategy_agent = CreativeStrategyAgent()
+evaluator_agent = EvaluatorAgent()
+marketing_plan_orchestrator = MarketingPlanOrchestrator()
 
 # Create MCP server
 mcp = FastMCP(
