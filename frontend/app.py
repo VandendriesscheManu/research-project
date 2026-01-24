@@ -162,8 +162,8 @@ with st.sidebar:
 st.subheader("📝 Product Information Form")
 st.write("Fill in product details to generate a comprehensive marketing plan.")
 
-# Demo Mode Button
-col_demo1, col_demo2 = st.columns([1, 4])
+# Demo Mode Toggle
+col_demo1, col_demo2 = st.columns([2, 3])
 with col_demo1:
     demo_mode = st.toggle("🎬 Fill Demo Data", value=False, help="Auto-fill all fields with demo data for presentation")
     
