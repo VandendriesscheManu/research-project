@@ -87,6 +87,12 @@ class ProductBriefResponse(BaseModel):
     brief_id: int
     message: str
 
+class ProductBriefGetResponse(BaseModel):
+    brief_id: int
+    session_id: str
+    product_name: str
+    # Include other fields as needed
+
 
 @app.on_event("startup")
 def _startup():
@@ -125,7 +131,12 @@ def get_brief(session_id: str, _: None = Depends(require_api_key)):
         brief = get_product_brief(session_id)
         if not brief:
             raise HTTPException(status_code=404, detail="No product brief found for this session")
-        return brief
+        # Always include the brief ID in the response for clarity
+        return {
+            "brief_id": brief.get('id'),
+            "session_id": session_id,
+            **brief
+        }
     except HTTPException:
         raise
     except Exception as e:
@@ -156,12 +167,12 @@ def suggest_field(req: SuggestFieldRequest, _: None = Depends(require_api_key)):
 # ============================================================================
 
 class GenerateMarketingPlanRequest(BaseModel):
-    brief_id: int
+    brief_id: str  # Changed to str to handle both UUID and int
     auto_iterate: bool = False
 
 
 class GenerateMarketingPlanResponse(BaseModel):
-    brief_id: int
+    brief_id: int  # Always return as int
     plan_id: int
     status: str
     quality_score: float
@@ -175,71 +186,113 @@ def generate_marketing_plan(req: GenerateMarketingPlanRequest, _: None = Depends
         # Import MCP client function
         from core.mcp_client import mcp_generate_marketing_plan
         
-        # Get product brief
-        brief = get_product_brief_by_id(req.brief_id)
+        # Try to convert brief_id to int, if it fails assume it's a session_id (UUID)
+        try:
+            brief_id_int = int(req.brief_id)
+            brief = get_product_brief_by_id(brief_id_int)
+        except (ValueError, TypeError):
+            # Looks like a UUID/session_id, try to get brief by session_id
+            brief = get_product_brief(req.brief_id)
+            if brief:
+                brief_id_int = brief.get('id')
+            else:
+                brief_id_int = None
+        
         if not brief:
-            raise HTTPException(status_code=404, detail="Product brief not found")
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Product brief not found. Provided value: {req.brief_id}. Expected integer brief_id or valid session_id."
+            )
         
         # Clean up the brief data - remove metadata fields and convert to product_data format
-        product_data = {
-            "product_name": brief.get("product_name"),
-            "product_category": brief.get("product_category"),
-            "product_features": brief.get("product_features"),
-            "product_usp": brief.get("product_usp"),
-            "product_branding": brief.get("product_branding"),
-            "product_variants": brief.get("product_variants"),
-            "target_primary": brief.get("target_primary"),
-            "target_secondary": brief.get("target_secondary"),
-            "target_demographics": brief.get("target_demographics"),
-            "target_psychographics": brief.get("target_psychographics"),
-            "target_personas": brief.get("target_personas"),
-            "target_problems": brief.get("target_problems"),
-            "market_size": brief.get("market_size"),
-            "competitors": brief.get("competitors"),
-            "competitor_pricing": brief.get("competitor_pricing"),
-            "competitor_distribution": brief.get("competitor_distribution"),
-            "market_benchmarks": brief.get("market_benchmarks"),
-            "production_cost": brief.get("production_cost"),
-            "desired_margin": brief.get("desired_margin"),
-            "suggested_price": brief.get("suggested_price"),
-            "price_elasticity": brief.get("price_elasticity"),
-            "marketing_channels": brief.get("marketing_channels"),
-            "historical_campaigns": brief.get("historical_campaigns"),
-            "marketing_budget": brief.get("marketing_budget"),
-            "tone_of_voice": brief.get("tone_of_voice"),
-            "distribution_channels": brief.get("distribution_channels"),
-            "logistics": brief.get("logistics"),
-            "seasonality": brief.get("seasonality"),
-            "launch_date": str(brief.get("launch_date")) if brief.get("launch_date") else None,
-            "seasonal_factors": brief.get("seasonal_factors"),
-            "campaign_timeline": brief.get("campaign_timeline"),
-            "sales_goals": brief.get("sales_goals"),
-            "market_share_goals": brief.get("market_share_goals"),
-            "brand_awareness_goals": brief.get("brand_awareness_goals"),
-            "success_metrics": brief.get("success_metrics")
+        # Only include fields that have actual values (not None, not empty strings)
+        product_data = {}
+        
+        field_mapping = {
+            "product_name": "product_name",
+            "product_category": "product_category",
+            "product_features": "product_features",
+            "product_usp": "product_usp",
+            "product_branding": "product_branding",
+            "product_variants": "product_variants",
+            "target_primary": "target_primary",
+            "target_secondary": "target_secondary",
+            "target_demographics": "target_demographics",
+            "target_psychographics": "target_psychographics",
+            "target_personas": "target_personas",
+            "target_problems": "target_problems",
+            "market_size": "market_size",
+            "competitors": "competitors",
+            "competitor_pricing": "competitor_pricing",
+            "competitor_distribution": "competitor_distribution",
+            "market_benchmarks": "market_benchmarks",
+            "production_cost": "production_cost",
+            "desired_margin": "desired_margin",
+            "suggested_price": "suggested_price",
+            "price_elasticity": "price_elasticity",
+            "marketing_channels": "marketing_channels",
+            "historical_campaigns": "historical_campaigns",
+            "marketing_budget": "marketing_budget",
+            "tone_of_voice": "tone_of_voice",
+            "distribution_channels": "distribution_channels",
+            "logistics": "logistics",
+            "seasonality": "seasonality",
+            "launch_date": "launch_date",
+            "seasonal_factors": "seasonal_factors",
+            "campaign_timeline": "campaign_timeline",
+            "sales_goals": "sales_goals",
+            "market_share_goals": "market_share_goals",
+            "brand_awareness_goals": "brand_awareness_goals",
+            "success_metrics": "success_metrics"
         }
         
-        # Remove None values
-        product_data = {k: v for k, v in product_data.items() if v is not None}
+        for brief_key, data_key in field_mapping.items():
+            value = brief.get(brief_key)
+            # Only include non-None, non-empty values
+            if value is not None and value != "" and value != []:
+                # Convert date to string if needed
+                if brief_key == "launch_date" and value:
+                    product_data[data_key] = str(value)
+                else:
+                    product_data[data_key] = value
+        
+        # Ensure we at least have product_name
+        if not product_data.get("product_name"):
+            raise HTTPException(status_code=422, detail="Product name is required to generate marketing plan")
         
         # Generate marketing plan via MCP
         marketing_plan_json = mcp_generate_marketing_plan(product_data, req.auto_iterate)
-        marketing_plan = json.loads(marketing_plan_json)
+        
+        # Validate the response is valid JSON
+        if not marketing_plan_json or marketing_plan_json.strip() == "":
+            raise HTTPException(status_code=500, detail="MCP server returned empty response")
+        
+        try:
+            marketing_plan = json.loads(marketing_plan_json)
+        except json.JSONDecodeError as json_err:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Invalid JSON response from MCP server: {str(json_err)}. Response: {marketing_plan_json[:200]}"
+            )
         
         # Save to database
         quality_score = marketing_plan.get('evaluation', {}).get('overall_score', 0)
-        plan_id = save_marketing_plan(req.brief_id, marketing_plan_json, quality_score)
+        plan_id = save_marketing_plan(brief_id_int, marketing_plan_json, quality_score)
         
         return GenerateMarketingPlanResponse(
-            brief_id=req.brief_id,
+            brief_id=brief_id_int,
             plan_id=plan_id,
             status="completed",
             quality_score=quality_score,
             message="Marketing plan generated successfully"
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate marketing plan: {str(e)}")
+        import traceback
+        error_details = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate marketing plan: {str(e)}\n\nDetails:\n{error_details}")
 
 
 @app.get("/marketing-plan/{brief_id}")

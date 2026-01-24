@@ -48,6 +48,12 @@ if "session_id" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+if "brief_id" not in st.session_state:
+    st.session_state.brief_id = None
+
+if "brief_saved" not in st.session_state:
+    st.session_state.brief_saved = False
+
 # Initialize API key from secrets (default) or allow override
 if "api_key" not in st.session_state:
     st.session_state.api_key = st.secrets.get("API_KEY", os.getenv("API_KEY", ""))
@@ -65,7 +71,10 @@ with st.sidebar:
     # Display URL with /docs for user reference
     display_url = f"{API_BASE_URL.rstrip('/')}/docs" if API_BASE_URL else "Not configured"
     st.write("API:", display_url)
-    st.write("Session:", st.session_state.session_id)
+    st.write("Session ID:", st.session_state.session_id[:8] + "...")
+    if st.session_state.brief_id:
+        st.write("Brief ID:", st.session_state.brief_id)
+        st.success("✅ Brief saved")
     
     st.divider()
     
@@ -563,10 +572,10 @@ with col3:
                             st.error("❌ Unauthorized - check your API key")
                         else:
                             response.raise_for_status()
-                            result = response.json()
+                            result = response.json().get('brief_id')
+                            st.session_state.brief_saved = True
                             
-                            # Save brief_id in session state
-                            st.session_state.brief_id = result['brief_id']
+                            st.success(f"✅ Product information saved successfully! (Brief ID: {st.session_state.brief_id
                             st.session_state.brief_saved = True
                             
                             st.success(f"✅ Product information saved successfully! (Brief ID: {result['brief_id']})")
@@ -582,7 +591,7 @@ with col3:
                     st.error(f"❌ An error occurred: {str(e)}")
 
 # Marketing Plan Generation Section
-if st.session_state.get("brief_saved") and st.session_state.get("brief_id"):
+if st.session_state.get("brief_saved") and st.session_state.brief_id:
     st.divider()
     st.markdown("---")
     st.header("🚀 Generate Marketing Plan")
@@ -590,7 +599,7 @@ if st.session_state.get("brief_saved") and st.session_state.get("brief_id"):
     
     col1, col2 = st.columns([2, 1])
     with col1:
-        st.info(f"📋 **Product Brief ID:** {st.session_state.brief_id}")
+        st.info(f"📋 **Product Brief ID:** {st.session_state.brief_id} | Session: {st.session_state.session_id[:13]}...")
         st.write("**What will be generated:**")
         st.markdown("""
         - ✅ Executive Summary
@@ -624,6 +633,8 @@ if st.session_state.get("brief_saved") and st.session_state.get("brief_id"):
     if st.button("🎯 Generate Complete Marketing Plan", use_container_width=True, type="primary"):
         if not st.session_state.api_key:
             st.error("❌ Please configure API key in sidebar")
+        elif not st.session_state.brief_id:
+            st.error("❌ No product brief found. Please save your product information first.")
         else:
             try:
                 headers = {"X-API-KEY": st.session_state.api_key}
@@ -634,11 +645,14 @@ if st.session_state.get("brief_saved") and st.session_state.get("brief_id"):
                     
                     status_container.info("📊 Phase 1: Market Research Agent analyzing market, competitors, and trends...")
                     
+                    # Ensure brief_id is converted to string (could be int or None)
+                    brief_id_str = str(st.session_state.brief_id)
+                    
                     # Make the API call
                     response = requests.post(
                         f"{API_BASE_URL}/generate-marketing-plan",
                         json={
-                            "brief_id": st.session_state.brief_id,
+                            "brief_id": brief_id_str,
                             "auto_iterate": auto_iterate
                         },
                         headers=headers,
@@ -647,6 +661,8 @@ if st.session_state.get("brief_saved") and st.session_state.get("brief_id"):
                     
                     if response.status_code == 401:
                         st.error("❌ Unauthorized - check your API key")
+                    elif response.status_code == 422:
+                        st.error(f"❌ Invalid request format. Brief ID: {brief_id_str}, Details: {response.text}")
                     elif response.status_code == 404:
                         st.error("❌ Product brief not found. Please save your product information first.")
                     else:
