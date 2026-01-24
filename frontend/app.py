@@ -165,7 +165,9 @@ st.write("Fill in product details to generate a comprehensive marketing plan.")
 # Demo Mode Button
 col_demo1, col_demo2 = st.columns([1, 4])
 with col_demo1:
-    if st.button("🎬 Fill Demo Data", use_container_width=True, help="Auto-fill all fields with demo data for presentation"):
+    demo_mode = st.toggle("🎬 Fill Demo Data", value=False, help="Auto-fill all fields with demo data for presentation")
+    
+    if demo_mode and not st.session_state.get("demo_loaded", False):
         st.session_state.form_data = {
             "product_name": "EcoBottle Pro",
             "product_category": "Reusable Smart Water Bottles",
@@ -206,8 +208,14 @@ with col_demo1:
             "regulatory_compliance": "FDA food-safe certified, BPA-free, EU REACH compliant, Prop 65 compliant, FCC certified (wireless charging)",
             "sustainability_certificates": "Certified B Corporation (pending), Carbon Neutral certified, 1% for the Planet member, Ocean Cleanup partner"
         }
+        st.session_state.demo_loaded = True
         st.success("✅ Demo data loaded! Scroll through all 8 steps to see the filled fields.")
         st.balloons()
+        st.rerun()
+    elif not demo_mode and st.session_state.get("demo_loaded", False):
+        st.session_state.form_data = {}
+        st.session_state.demo_loaded = False
+        st.info("Demo data cleared!")
         st.rerun()
 
 with col_demo2:
