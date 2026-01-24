@@ -3,6 +3,7 @@ import json
 from typing import Optional, List
 from datetime import date
 from fastapi import FastAPI, HTTPException, Header, Depends, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from core.db import (
     init_db, 
@@ -14,6 +15,15 @@ from core.db import (
 from core.mcp_client import mcp_suggest_field
 
 app = FastAPI(title="Marketing Plan Generator API", version="0.1.0")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 API_KEY = os.getenv("API_KEY")
 if not API_KEY:
@@ -170,8 +180,50 @@ def generate_marketing_plan(req: GenerateMarketingPlanRequest, _: None = Depends
         if not brief:
             raise HTTPException(status_code=404, detail="Product brief not found")
         
+        # Clean up the brief data - remove metadata fields and convert to product_data format
+        product_data = {
+            "product_name": brief.get("product_name"),
+            "product_category": brief.get("product_category"),
+            "product_features": brief.get("product_features"),
+            "product_usp": brief.get("product_usp"),
+            "product_branding": brief.get("product_branding"),
+            "product_variants": brief.get("product_variants"),
+            "target_primary": brief.get("target_primary"),
+            "target_secondary": brief.get("target_secondary"),
+            "target_demographics": brief.get("target_demographics"),
+            "target_psychographics": brief.get("target_psychographics"),
+            "target_personas": brief.get("target_personas"),
+            "target_problems": brief.get("target_problems"),
+            "market_size": brief.get("market_size"),
+            "competitors": brief.get("competitors"),
+            "competitor_pricing": brief.get("competitor_pricing"),
+            "competitor_distribution": brief.get("competitor_distribution"),
+            "market_benchmarks": brief.get("market_benchmarks"),
+            "production_cost": brief.get("production_cost"),
+            "desired_margin": brief.get("desired_margin"),
+            "suggested_price": brief.get("suggested_price"),
+            "price_elasticity": brief.get("price_elasticity"),
+            "marketing_channels": brief.get("marketing_channels"),
+            "historical_campaigns": brief.get("historical_campaigns"),
+            "marketing_budget": brief.get("marketing_budget"),
+            "tone_of_voice": brief.get("tone_of_voice"),
+            "distribution_channels": brief.get("distribution_channels"),
+            "logistics": brief.get("logistics"),
+            "seasonality": brief.get("seasonality"),
+            "launch_date": str(brief.get("launch_date")) if brief.get("launch_date") else None,
+            "seasonal_factors": brief.get("seasonal_factors"),
+            "campaign_timeline": brief.get("campaign_timeline"),
+            "sales_goals": brief.get("sales_goals"),
+            "market_share_goals": brief.get("market_share_goals"),
+            "brand_awareness_goals": brief.get("brand_awareness_goals"),
+            "success_metrics": brief.get("success_metrics")
+        }
+        
+        # Remove None values
+        product_data = {k: v for k, v in product_data.items() if v is not None}
+        
         # Generate marketing plan via MCP
-        marketing_plan_json = mcp_generate_marketing_plan(brief, req.auto_iterate)
+        marketing_plan_json = mcp_generate_marketing_plan(product_data, req.auto_iterate)
         marketing_plan = json.loads(marketing_plan_json)
         
         # Save to database
