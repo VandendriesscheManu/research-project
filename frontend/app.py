@@ -533,7 +533,7 @@ with col3:
             st.rerun()
     else:
         # Submit button on final step
-        if st.button("💾 Save & Generate Plan", use_container_width=True, type="primary"):
+        if st.button("💾 Save Product Information", use_container_width=True, type="primary"):
             # Get product_name from session state
             product_name = st.session_state.form_data.get("product_name", "")
             
@@ -565,6 +565,10 @@ with col3:
                             response.raise_for_status()
                             result = response.json()
                             
+                            # Save brief_id in session state
+                            st.session_state.brief_id = result['brief_id']
+                            st.session_state.brief_saved = True
+                            
                             st.success(f"✅ Product information saved successfully! (Brief ID: {result['brief_id']})")
                             st.info(f"📝 {result['message']}")
                             
@@ -576,3 +580,279 @@ with col3:
                     st.error(f"❌ Failed to save product information: {str(e)}")
                 except Exception as e:
                     st.error(f"❌ An error occurred: {str(e)}")
+
+# Marketing Plan Generation Section
+if st.session_state.get("brief_saved") and st.session_state.get("brief_id"):
+    st.divider()
+    st.markdown("---")
+    st.header("🚀 Generate Marketing Plan")
+    st.write("Your product information is saved. Now generate a complete 12-section marketing plan!")
+    
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.info(f"📋 **Product Brief ID:** {st.session_state.brief_id}")
+        st.write("**What will be generated:**")
+        st.markdown("""
+        - ✅ Executive Summary
+        - ✅ Mission, Vision & Value Proposition
+        - ✅ Market & Situation Analysis
+        - ✅ SWOT Analysis
+        - ✅ Target Audience & Positioning
+        - ✅ Marketing Goals & KPIs
+        - ✅ Marketing Mix (7Ps)
+        - ✅ Tactics & Action Plan
+        - ✅ Budget & Resources
+        - ✅ Monitoring & Evaluation
+        - ✅ Risks & Mitigation
+        - ✅ Launch Strategy
+        """)
+    
+    with col2:
+        auto_iterate = st.checkbox(
+            "🔄 Auto-Improve",
+            value=False,
+            help="Automatically improve the plan if quality score is below 8.0 (takes longer)"
+        )
+        
+        st.markdown("**Estimated Time:**")
+        if auto_iterate:
+            st.write("⏱️ 5-10 minutes")
+        else:
+            st.write("⏱️ 2-5 minutes")
+    
+    # Generate button
+    if st.button("🎯 Generate Complete Marketing Plan", use_container_width=True, type="primary"):
+        if not st.session_state.api_key:
+            st.error("❌ Please configure API key in sidebar")
+        else:
+            try:
+                headers = {"X-API-KEY": st.session_state.api_key}
+                
+                with st.spinner("🤖 AI agents are working on your marketing plan... This may take 2-5 minutes."):
+                    # Add status updates
+                    status_container = st.empty()
+                    
+                    status_container.info("📊 Phase 1: Market Research Agent analyzing market, competitors, and trends...")
+                    
+                    # Make the API call
+                    response = requests.post(
+                        f"{API_BASE_URL}/generate-marketing-plan",
+                        json={
+                            "brief_id": st.session_state.brief_id,
+                            "auto_iterate": auto_iterate
+                        },
+                        headers=headers,
+                        timeout=600  # 10 minutes timeout
+                    )
+                    
+                    if response.status_code == 401:
+                        st.error("❌ Unauthorized - check your API key")
+                    elif response.status_code == 404:
+                        st.error("❌ Product brief not found. Please save your product information first.")
+                    else:
+                        response.raise_for_status()
+                        result = response.json()
+                        
+                        # Save plan info to session state
+                        st.session_state.plan_id = result.get('plan_id')
+                        st.session_state.quality_score = result.get('quality_score', 0)
+                        st.session_state.plan_generated = True
+                        
+                        status_container.empty()
+                        
+                        # Success message with score
+                        st.success(f"✅ Marketing Plan Generated Successfully!")
+                        
+                        # Display quality score
+                        score = result.get('quality_score', 0)
+                        if score >= 8.0:
+                            st.success(f"🌟 **Quality Score: {score:.1f}/10** - Excellent!")
+                        elif score >= 7.0:
+                            st.info(f"👍 **Quality Score: {score:.1f}/10** - Good!")
+                        else:
+                            st.warning(f"💡 **Quality Score: {score:.1f}/10** - Consider enabling Auto-Improve")
+                        
+                        st.info(f"📋 Plan ID: {result.get('plan_id')} | Brief ID: {result.get('brief_id')}")
+                        
+            except requests.exceptions.Timeout:
+                st.error("⏱️ Request timed out. The plan generation is taking longer than expected. Please check the backend logs.")
+            except requests.exceptions.RequestException as e:
+                st.error(f"❌ Failed to generate marketing plan: {str(e)}")
+            except Exception as e:
+                st.error(f"❌ An error occurred: {str(e)}")
+
+# Display Marketing Plan Section
+if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
+    st.divider()
+    st.markdown("---")
+    st.header("📄 Your Marketing Plan")
+    
+    # Fetch and display the marketing plan
+    if st.button("🔄 Reload Marketing Plan", use_container_width=True):
+        st.rerun()
+    
+    try:
+        headers = {"X-API-KEY": st.session_state.api_key}
+        
+        with st.spinner("📥 Loading your marketing plan..."):
+            response = requests.get(
+                f"{API_BASE_URL}/marketing-plan/{st.session_state.brief_id}",
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                plan_data = response.json()
+                plan_content = plan_data.get('plan_data', {})
+                
+                # Display metadata
+                metadata = plan_content.get('metadata', {})
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Product", metadata.get('product_name', 'N/A'))
+                with col2:
+                    st.metric("Quality Score", f"{metadata.get('quality_score', 0):.1f}/10")
+                with col3:
+                    st.metric("Version", metadata.get('version', 'N/A'))
+                
+                st.caption(f"Generated: {metadata.get('generated_at', 'N/A')}")
+                
+                # Display evaluation summary
+                st.divider()
+                evaluation = plan_content.get('evaluation', {})
+                
+                st.subheader("📊 Evaluation Summary")
+                
+                # Criterion scores
+                criterion_scores = evaluation.get('criterion_scores', {})
+                if criterion_scores:
+                    cols = st.columns(3)
+                    for idx, (criterion, score) in enumerate(criterion_scores.items()):
+                        with cols[idx % 3]:
+                            st.metric(criterion.replace('_', ' ').title(), f"{score:.1f}/10")
+                
+                # Strengths and Weaknesses
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("**💪 Strengths:**")
+                    for strength in evaluation.get('strengths', [])[:5]:
+                        st.markdown(f"- {strength}")
+                
+                with col2:
+                    st.markdown("**🔍 Areas for Improvement:**")
+                    for weakness in evaluation.get('weaknesses', [])[:5]:
+                        st.markdown(f"- {weakness}")
+                
+                # Recommendations
+                if evaluation.get('recommendations'):
+                    st.markdown("**💡 Recommendations:**")
+                    for rec in evaluation.get('recommendations', []):
+                        st.info(rec)
+                
+                # Display all 12 sections
+                st.divider()
+                st.subheader("📋 Complete Marketing Plan")
+                
+                sections = plan_content.get('sections', {})
+                
+                # Create tabs for each section
+                section_names = [
+                    "1. Executive Summary",
+                    "2. Mission & Vision",
+                    "3. Market Analysis",
+                    "4. SWOT",
+                    "5. Target & Positioning",
+                    "6. Goals & KPIs",
+                    "7. Marketing Mix",
+                    "8. Action Plan",
+                    "9. Budget",
+                    "10. Monitoring",
+                    "11. Risks",
+                    "12. Launch Strategy"
+                ]
+                
+                tabs = st.tabs(section_names)
+                
+                section_keys = [
+                    "1_executive_summary",
+                    "2_mission_vision_value",
+                    "3_situation_market_analysis",
+                    "4_swot_analysis",
+                    "5_target_audience_positioning",
+                    "6_marketing_goals_kpis",
+                    "7_strategy_marketing_mix",
+                    "8_tactics_action_plan",
+                    "9_budget_resources",
+                    "10_monitoring_evaluation",
+                    "11_risks_mitigation",
+                    "12_launch_strategy"
+                ]
+                
+                for idx, (tab, section_key) in enumerate(zip(tabs, section_keys)):
+                    with tab:
+                        section = sections.get(section_key, {})
+                        st.markdown(f"### {section.get('title', 'Section')}")
+                        
+                        # Display section content
+                        content = section.get('content', {})
+                        if isinstance(content, dict):
+                            display_dict_content(content)
+                        else:
+                            st.write(content)
+                
+                # Download options
+                st.divider()
+                st.subheader("💾 Export Options")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    # Download as JSON
+                    import json
+                    json_str = json.dumps(plan_content, indent=2, ensure_ascii=False)
+                    st.download_button(
+                        label="📥 Download as JSON",
+                        data=json_str,
+                        file_name=f"marketing_plan_{metadata.get('product_name', 'plan')}.json",
+                        mime="application/json",
+                        use_container_width=True
+                    )
+                
+                with col2:
+                    # Download full data
+                    full_json = json.dumps(plan_data, indent=2, ensure_ascii=False)
+                    st.download_button(
+                        label="📥 Download Full Data",
+                        data=full_json,
+                        file_name=f"marketing_plan_full_{metadata.get('product_name', 'plan')}.json",
+                        mime="application/json",
+                        use_container_width=True
+                    )
+                
+            elif response.status_code == 404:
+                st.warning("📭 No marketing plan found yet. Click 'Generate Complete Marketing Plan' above.")
+            else:
+                st.error(f"❌ Error loading plan: {response.status_code}")
+                
+    except Exception as e:
+        st.error(f"❌ Error loading marketing plan: {str(e)}")
+
+# Helper function to display nested dictionary content
+def display_dict_content(data, level=0):
+    """Recursively display dictionary content in a readable format"""
+    for key, value in data.items():
+        header = key.replace('_', ' ').title()
+        
+        if isinstance(value, dict):
+            st.markdown(f"{'#' * (3 + level)} {header}")
+            display_dict_content(value, level + 1)
+        elif isinstance(value, list):
+            st.markdown(f"**{header}:**")
+            for item in value:
+                if isinstance(item, dict):
+                    st.markdown("---")
+                    display_dict_content(item, level + 1)
+                else:
+                    st.markdown(f"- {item}")
+        else:
+            st.markdown(f"**{header}:** {value}")
+            st.write("")

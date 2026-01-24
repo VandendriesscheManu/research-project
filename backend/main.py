@@ -1,9 +1,16 @@
 import os
+import json
 from typing import Optional, List
 from datetime import date
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends, BackgroundTasks
 from pydantic import BaseModel
-from core.db import init_db, save_product_brief, get_product_brief
+from core.db import (
+    init_db, 
+    save_product_brief, 
+    get_product_brief,
+    save_marketing_plan,
+    get_marketing_plan
+)
 from core.mcp_client import mcp_suggest_field
 
 app = FastAPI(title="Marketing Plan Generator API", version="0.1.0")
@@ -132,3 +139,81 @@ def suggest_field(req: SuggestFieldRequest, _: None = Depends(require_api_key)):
         return {"suggestion": suggestion}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Marketing Plan Generation Endpoints
+# ============================================================================
+
+class GenerateMarketingPlanRequest(BaseModel):
+    brief_id: int
+    auto_iterate: bool = False
+
+
+class GenerateMarketingPlanResponse(BaseModel):
+    brief_id: int
+    plan_id: int
+    status: str
+    quality_score: float
+    message: str
+
+
+@app.post("/generate-marketing-plan", response_model=GenerateMarketingPlanResponse)
+def generate_marketing_plan(req: GenerateMarketingPlanRequest, _: None = Depends(require_api_key)):
+    """Generate a complete marketing plan from product brief"""
+    try:
+        # Import MCP client function
+        from core.mcp_client import mcp_generate_marketing_plan
+        
+        # Get product brief
+        brief = get_product_brief_by_id(req.brief_id)
+        if not brief:
+            raise HTTPException(status_code=404, detail="Product brief not found")
+        
+        # Generate marketing plan via MCP
+        marketing_plan_json = mcp_generate_marketing_plan(brief, req.auto_iterate)
+        marketing_plan = json.loads(marketing_plan_json)
+        
+        # Save to database
+        quality_score = marketing_plan.get('evaluation', {}).get('overall_score', 0)
+        plan_id = save_marketing_plan(req.brief_id, marketing_plan_json, quality_score)
+        
+        return GenerateMarketingPlanResponse(
+            brief_id=req.brief_id,
+            plan_id=plan_id,
+            status="completed",
+            quality_score=quality_score,
+            message="Marketing plan generated successfully"
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate marketing plan: {str(e)}")
+
+
+@app.get("/marketing-plan/{brief_id}")
+def get_plan(brief_id: int, _: None = Depends(require_api_key)):
+    """Retrieve the marketing plan for a product brief"""
+    try:
+        plan = get_marketing_plan(brief_id)
+        if not plan:
+            raise HTTPException(status_code=404, detail="No marketing plan found for this brief")
+        
+        # Parse JSON data
+        plan['plan_data'] = json.loads(plan['plan_data']) if isinstance(plan['plan_data'], str) else plan['plan_data']
+        return plan
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def get_product_brief_by_id(brief_id: int) -> dict:
+    """Helper function to get product brief by ID"""
+    from core.db import _conn
+    from psycopg2.extras import RealDictCursor
+    
+    with _conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT * FROM product_briefs WHERE id = %s", (brief_id,))
+        result = cur.fetchone()
+        return dict(result) if result else None
+

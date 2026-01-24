@@ -123,3 +123,40 @@ def update_generated_marketing_plan(brief_id: int, marketing_plan: str):
             """,
             (marketing_plan, brief_id)
         )
+
+
+def save_marketing_plan(brief_id: int, marketing_plan_json: str, quality_score: float):
+    """Save complete marketing plan to database"""
+    with _conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO marketing_plans (
+                brief_id, plan_data, quality_score
+            ) VALUES (%s, %s::jsonb, %s)
+            RETURNING id
+            """,
+            (brief_id, marketing_plan_json, quality_score)
+        )
+        plan_id = cur.fetchone()[0]
+        
+        # Also update the product brief with the plan
+        update_generated_marketing_plan(brief_id, marketing_plan_json)
+        
+        return plan_id
+
+
+def get_marketing_plan(brief_id: int) -> dict:
+    """Get marketing plan by brief ID"""
+    with _conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute(
+            """
+            SELECT * FROM marketing_plans
+            WHERE brief_id = %s
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (brief_id,)
+        )
+        result = cur.fetchone()
+        return dict(result) if result else None
+

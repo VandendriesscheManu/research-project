@@ -47,3 +47,48 @@ def mcp_suggest_field(field_name: str, context: dict) -> str:
         import traceback
         error_details = traceback.format_exc()
         raise Exception(f"MCP client error: {str(e)}\n\nFull traceback:\n{error_details}")
+
+
+async def _call_generate_marketing_plan(product_data: dict, auto_iterate: bool) -> str:
+    """
+    Call MCP server's generate_marketing_plan tool using stdio transport.
+    """
+    # Convert product data to JSON string
+    product_json = json.dumps(product_data)
+    
+    # Define server parameters for stdio transport
+    server_params = StdioServerParameters(
+        command="docker",
+        args=["exec", "-i", "mcp-server", "python", "server.py"],
+    )
+    
+    # Connect to MCP server via stdio
+    async with stdio_client(server_params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            # Initialize the connection
+            await session.initialize()
+            
+            # Call the generate_marketing_plan tool
+            result = await session.call_tool(
+                "generate_marketing_plan",
+                arguments={
+                    "product_data": product_json,
+                    "auto_iterate": auto_iterate
+                }
+            )
+            
+            # Extract text from result
+            return result.content[0].text if result.content else ""
+
+
+def mcp_generate_marketing_plan(product_data: dict, auto_iterate: bool = False) -> str:
+    """
+    Synchronous wrapper for marketing plan generation via MCP.
+    """
+    try:
+        return asyncio.run(_call_generate_marketing_plan(product_data, auto_iterate))
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        raise Exception(f"MCP client error: {str(e)}\n\nFull traceback:\n{error_details}")
+

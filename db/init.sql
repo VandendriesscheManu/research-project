@@ -64,3 +64,19 @@ CREATE TABLE IF NOT EXISTS product_briefs (
 
 CREATE INDEX IF NOT EXISTS idx_product_briefs_session_id ON product_briefs(session_id);
 CREATE INDEX IF NOT EXISTS idx_product_briefs_created_at ON product_briefs(created_at);
+
+
+-- Marketing Plans table - stores generated marketing plans
+CREATE TABLE IF NOT EXISTS marketing_plans (
+  id BIGSERIAL PRIMARY KEY,
+  brief_id BIGINT NOT NULL REFERENCES product_briefs(id) ON DELETE CASCADE,
+  plan_data JSONB NOT NULL,
+  quality_score NUMERIC(3,1) DEFAULT 0,
+  status TEXT DEFAULT 'draft',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_marketing_plans_brief_id ON marketing_plans(brief_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_plans_created_at ON marketing_plans(created_at);
+
