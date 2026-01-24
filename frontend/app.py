@@ -488,22 +488,42 @@ elif st.session_state.current_step == 3:
             if st.button("✨", key="ai_competitors", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("competitors", "Competitors")
                 
-        st.text_area("Competitor Pricing & Positioning", 
-                    value=st.session_state.form_data.get("competitor_pricing", ""),
-                    placeholder="How are competitors priced?", height=100,
-                    key="input_competitor_pricing",
-                    on_change=update_field("competitor_pricing"))
+        col_price, col_price_btn = st.columns([5, 1])
+        with col_price:
+            st.text_area("Competitor Pricing & Positioning", 
+                        value=st.session_state.form_data.get("competitor_pricing", ""),
+                        placeholder="How are competitors priced?", height=100,
+                        key="input_competitor_pricing",
+                        on_change=update_field("competitor_pricing"))
+        with col_price_btn:
+            st.write("")
+            if st.button("✨", key="ai_competitor_pricing", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("competitor_pricing", "Competitor Pricing")
+                
     with col2:
-        st.text_area("Competitor Distribution Channels", 
-                    value=st.session_state.form_data.get("competitor_distribution", ""),
-                    placeholder="Where do they sell?", height=100,
-                    key="input_competitor_distribution",
-                    on_change=update_field("competitor_distribution"))
-        st.text_area("Benchmarks & Best Practices", 
-                    value=st.session_state.form_data.get("market_benchmarks", ""),
-                    placeholder="Industry standards...", height=100,
-                    key="input_market_benchmarks",
-                    on_change=update_field("market_benchmarks"))
+        col_dist, col_dist_btn = st.columns([5, 1])
+        with col_dist:
+            st.text_area("Competitor Distribution Channels", 
+                        value=st.session_state.form_data.get("competitor_distribution", ""),
+                        placeholder="Where do they sell?", height=100,
+                        key="input_competitor_distribution",
+                        on_change=update_field("competitor_distribution"))
+        with col_dist_btn:
+            st.write("")
+            if st.button("✨", key="ai_competitor_distribution", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("competitor_distribution", "Competitor Distribution")
+                
+        col_bench, col_bench_btn = st.columns([5, 1])
+        with col_bench:
+            st.text_area("Benchmarks & Best Practices", 
+                        value=st.session_state.form_data.get("market_benchmarks", ""),
+                        placeholder="Industry standards...", height=100,
+                        key="input_market_benchmarks",
+                        on_change=update_field("market_benchmarks"))
+        with col_bench_btn:
+            st.write("")
+            if st.button("✨", key="ai_market_benchmarks", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("market_benchmarks", "Benchmarks & Best Practices")
 
 elif st.session_state.current_step == 4:
     # 4. Price & Margin Data
