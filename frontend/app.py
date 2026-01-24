@@ -228,6 +228,8 @@ st.caption(f"Step {st.session_state.current_step} of {total_steps}")
 
 # AI Assistant info
 st.info("✨ Click the ✨ button next to any field to get AI-powered suggestions based on the information you've already provided.")
+if not st.session_state.form_data.get("product_name"):
+    st.warning("💡 Fill in at least the Product Name first for better AI suggestions!")
 
 st.divider()
 
@@ -244,14 +246,13 @@ def get_ai_suggestion(field_name, field_label):
         return
     
     if not st.session_state.form_data.get("product_name"):
-        st.warning("💡 Fill in at least the Product Name first for better AI suggestions!")
         return
     
     # Build context from filled fields
     context = {k: v for k, v in st.session_state.form_data.items() if v}
     
     try:
-        with st.spinner(f"✨ Generating suggestion..."):
+        with st.spinner(""):
             response = requests.post(
                 f"{API_BASE_URL}/suggest-field",
                 json={
@@ -309,7 +310,7 @@ if st.session_state.current_step == 1:
                          on_change=update_field("product_category"),
                          label_visibility="visible")
         with col_cat_btn:
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-top: 32px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="ai_product_category", help="AI assist"):
                 get_ai_suggestion("product_category", "Category/Type")
                 
@@ -322,7 +323,7 @@ if st.session_state.current_step == 1:
                         key="input_product_features",
                         on_change=update_field("product_features"))
         with col_feat_btn:
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-top: 32px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="ai_product_features", help="AI assist"):
                 get_ai_suggestion("product_features", "Key Features")
                 
@@ -334,7 +335,7 @@ if st.session_state.current_step == 1:
                         key="input_product_usp",
                         on_change=update_field("product_usp"))
         with col_usp_btn:
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("<div style='margin-top: 32px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="ai_product_usp", help="AI assist"):
                 get_ai_suggestion("product_usp", "Unique Selling Points")
 
@@ -346,7 +347,7 @@ if st.session_state.current_step == 1:
                     key="input_product_branding",
                     on_change=update_field("product_branding"))
     with col_brand_btn:
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 32px;'></div>", unsafe_allow_html=True)
         if st.button("✨", key="ai_product_branding", help="AI assist"):
             get_ai_suggestion("product_branding", "Branding & Packaging")
             
