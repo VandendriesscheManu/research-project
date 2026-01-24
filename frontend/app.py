@@ -372,27 +372,49 @@ elif st.session_state.current_step == 2:
     st.markdown("### 2️⃣ Target Audience Information")
     col1, col2 = st.columns(2)
     with col1:
-        st.text_area("Primary Target Audience", 
-                    value=st.session_state.form_data.get("target_primary", ""),
-                    placeholder="Main customer segment...", height=80,
-                    key="input_target_primary",
-                    on_change=update_field("target_primary"))
+        col_prim, col_prim_btn = st.columns([5, 1])
+        with col_prim:
+            st.text_area("Primary Target Audience", 
+                        value=st.session_state.form_data.get("target_primary", ""),
+                        placeholder="Main customer segment...", height=80,
+                        key="input_target_primary",
+                        on_change=update_field("target_primary"))
+        with col_prim_btn:
+            st.write("")
+            if st.button("✨", key="ai_target_primary", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("target_primary", "Primary Target Audience")
+                
         st.text_area("Secondary Target Audience", 
                     value=st.session_state.form_data.get("target_secondary", ""),
                     placeholder="Additional segments...", height=80,
                     key="input_target_secondary",
                     on_change=update_field("target_secondary"))
-        st.text_area("Demographics", 
-                    value=st.session_state.form_data.get("target_demographics", ""),
-                    placeholder="Age, gender, location, income...", height=80,
-                    key="input_target_demographics",
-                    on_change=update_field("target_demographics"))
+        
+        col_demo, col_demo_btn = st.columns([5, 1])
+        with col_demo:
+            st.text_area("Demographics", 
+                        value=st.session_state.form_data.get("target_demographics", ""),
+                        placeholder="Age, gender, location, income...", height=80,
+                        key="input_target_demographics",
+                        on_change=update_field("target_demographics"))
+        with col_demo_btn:
+            st.write("")
+            if st.button("✨", key="ai_target_demographics", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("target_demographics", "Demographics")
+                
     with col2:
-        st.text_area("Psychographics", 
-                    value=st.session_state.form_data.get("target_psychographics", ""),
-                    placeholder="Interests, lifestyle, buying behavior...", height=80,
-                    key="input_target_psychographics",
-                    on_change=update_field("target_psychographics"))
+        col_psych, col_psych_btn = st.columns([5, 1])
+        with col_psych:
+            st.text_area("Psychographics", 
+                        value=st.session_state.form_data.get("target_psychographics", ""),
+                        placeholder="Interests, lifestyle, buying behavior...", height=80,
+                        key="input_target_psychographics",
+                        on_change=update_field("target_psychographics"))
+        with col_psych_btn:
+            st.write("")
+            if st.button("✨", key="ai_target_psychographics", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("target_psychographics", "Psychographics")
+                
         st.text_area("Buyer Personas", 
                     value=st.session_state.form_data.get("target_personas", ""),
                     placeholder="Describe typical customers...", height=80,
@@ -409,16 +431,30 @@ elif st.session_state.current_step == 3:
     st.markdown("### 3️⃣ Market & Competition Data")
     col1, col2 = st.columns(2)
     with col1:
-        st.text_input("Market Size & Growth Trends", 
-                     value=st.session_state.form_data.get("market_size", ""),
-                     placeholder="e.g., $5B market, 8% annual growth",
-                     key="input_market_size",
-                     on_change=update_field("market_size"))
-        st.text_area("Key Competitors & Products", 
-                    value=st.session_state.form_data.get("competitors", ""),
-                    placeholder="List main competitors...", height=100,
-                    key="input_competitors",
-                    on_change=update_field("competitors"))
+        col_size, col_size_btn = st.columns([5, 1])
+        with col_size:
+            st.text_input("Market Size & Growth Trends", 
+                         value=st.session_state.form_data.get("market_size", ""),
+                         placeholder="e.g., $5B market, 8% annual growth",
+                         key="input_market_size",
+                         on_change=update_field("market_size"))
+        with col_size_btn:
+            st.write("")
+            if st.button("✨", key="ai_market_size", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("market_size", "Market Size")
+                
+        col_comp, col_comp_btn = st.columns([5, 1])
+        with col_comp:
+            st.text_area("Key Competitors & Products", 
+                        value=st.session_state.form_data.get("competitors", ""),
+                        placeholder="List main competitors...", height=100,
+                        key="input_competitors",
+                        on_change=update_field("competitors"))
+        with col_comp_btn:
+            st.write("")
+            if st.button("✨", key="ai_competitors", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("competitors", "Competitors")
+                
         st.text_area("Competitor Pricing & Positioning", 
                     value=st.session_state.form_data.get("competitor_pricing", ""),
                     placeholder="How are competitors priced?", height=100,
@@ -441,22 +477,43 @@ elif st.session_state.current_step == 4:
     st.markdown("### 4️⃣ Price & Margin Data")
     col1, col2 = st.columns(2)
     with col1:
-        st.text_input("Production Cost/Cost Price", 
-                     value=st.session_state.form_data.get("production_cost", ""),
-                     placeholder="e.g., $12 per unit",
-                     key="input_production_cost",
-                     on_change=update_field("production_cost"))
-        st.text_input("Desired Margin", 
-                     value=st.session_state.form_data.get("desired_margin", ""),
-                     placeholder="e.g., 40%",
-                     key="input_desired_margin",
-                     on_change=update_field("desired_margin"))
+        col_cost, col_cost_btn = st.columns([5, 1])
+        with col_cost:
+            st.text_input("Production Cost/Cost Price", 
+                         value=st.session_state.form_data.get("production_cost", ""),
+                         placeholder="e.g., $12 per unit",
+                         key="input_production_cost",
+                         on_change=update_field("production_cost"))
+        with col_cost_btn:
+            st.write("")
+            if st.button("✨", key="ai_production_cost", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("production_cost", "Production Cost")
+                
+        col_margin, col_margin_btn = st.columns([5, 1])
+        with col_margin:
+            st.text_input("Desired Margin", 
+                         value=st.session_state.form_data.get("desired_margin", ""),
+                         placeholder="e.g., 40%",
+                         key="input_desired_margin",
+                         on_change=update_field("desired_margin"))
+        with col_margin_btn:
+            st.write("")
+            if st.button("✨", key="ai_desired_margin", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("desired_margin", "Desired Margin")
+                
     with col2:
-        st.text_input("Suggested Price or Price Range", 
-                     value=st.session_state.form_data.get("suggested_price", ""),
-                     placeholder="e.g., $25-$30",
-                     key="input_suggested_price",
-                     on_change=update_field("suggested_price"))
+        col_price, col_price_btn = st.columns([5, 1])
+        with col_price:
+            st.text_input("Suggested Price or Price Range", 
+                         value=st.session_state.form_data.get("suggested_price", ""),
+                         placeholder="e.g., $25-$30",
+                         key="input_suggested_price",
+                         on_change=update_field("suggested_price"))
+        with col_price_btn:
+            st.write("")
+            if st.button("✨", key="ai_suggested_price", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("suggested_price", "Suggested Price")
+                
         st.text_area("Price Elasticity & Demand Expectations", 
                     value=st.session_state.form_data.get("price_elasticity", ""),
                     placeholder="Expected demand at different price points...",
@@ -489,8 +546,18 @@ elif st.session_state.current_step == 5:
                      placeholder="e.g., $50,000 for 6 months",
                      key="input_marketing_budget",
                      on_change=update_field("marketing_budget"))
-        st.text_area("Tone of Voice & Key Message", 
-                    value=st.session_state.form_data.get("tone_of_voice", ""),
+        
+        col_tone, col_tone_btn = st.columns([5, 1])
+        with col_tone:
+            st.text_area("Tone of Voice & Key Message", 
+                        value=st.session_state.form_data.get("tone_of_voice", ""),
+                        placeholder="Brand voice and core messaging...",
+                        key="input_tone_of_voice",
+                        on_change=update_field("tone_of_voice"))
+        with col_tone_btn:
+            st.write("")
+            if st.button("✨", key="ai_tone_of_voice", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("tone_of_voice", "Tone of Voice")
                     placeholder="Brand voice and core messaging...",
                     key="input_tone_of_voice",
                     on_change=update_field("tone_of_voice"))
