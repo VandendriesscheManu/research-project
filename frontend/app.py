@@ -663,17 +663,29 @@ elif st.session_state.current_step == 7:
                                      key="input_launch_date")
         st.session_state.form_data["launch_date"] = str(selected_date)
         
-        st.text_area("Seasonal Factors or Relevant Events", 
-                    value=st.session_state.form_data.get("seasonal_factors", ""),
-                    placeholder="Holidays, events, trends...",
-                    key="input_seasonal_factors",
-                    on_change=update_field("seasonal_factors"))
+        col_seas_fac, col_seas_fac_btn = st.columns([5, 1])
+        with col_seas_fac:
+            st.text_area("Seasonal Factors or Relevant Events", 
+                        value=st.session_state.form_data.get("seasonal_factors", ""),
+                        placeholder="Holidays, events, trends...",
+                        key="input_seasonal_factors",
+                        on_change=update_field("seasonal_factors"))
+        with col_seas_fac_btn:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            if st.button("✨", key="btn_seasonal_factors", help="AI suggestion"):
+                get_ai_suggestion("seasonal_factors", "Seasonal Factors or Relevant Events")
     with col2:
-        st.text_area("Timeline for Promotion Activities", 
-                    value=st.session_state.form_data.get("campaign_timeline", ""),
-                    placeholder="Pre-launch, launch, post-launch phases...",
-                    key="input_campaign_timeline",
-                    on_change=update_field("campaign_timeline"))
+        col_timeline, col_timeline_btn = st.columns([5, 1])
+        with col_timeline:
+            st.text_area("Timeline for Promotion Activities", 
+                        value=st.session_state.form_data.get("campaign_timeline", ""),
+                        placeholder="Pre-launch, launch, post-launch phases...",
+                        key="input_campaign_timeline",
+                        on_change=update_field("campaign_timeline"))
+        with col_timeline_btn:
+            st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+            if st.button("✨", key="btn_campaign_timeline", help="AI suggestion"):
+                get_ai_suggestion("campaign_timeline", "Timeline for Promotion Activities")
 
 elif st.session_state.current_step == 8:
     # 8. Goals & KPIs
