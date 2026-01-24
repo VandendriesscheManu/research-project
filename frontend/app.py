@@ -558,9 +558,6 @@ elif st.session_state.current_step == 5:
             st.write("")
             if st.button("✨", key="ai_tone_of_voice", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("tone_of_voice", "Tone of Voice")
-                    placeholder="Brand voice and core messaging...",
-                    key="input_tone_of_voice",
-                    on_change=update_field("tone_of_voice"))
 
 elif st.session_state.current_step == 6:
     # 6. Distribution & Sales
