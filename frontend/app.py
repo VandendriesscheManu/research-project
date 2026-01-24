@@ -398,11 +398,17 @@ elif st.session_state.current_step == 2:
             if st.button("✨", key="ai_target_primary", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("target_primary", "Primary Target Audience")
                 
-        st.text_area("Secondary Target Audience", 
-                    value=st.session_state.form_data.get("target_secondary", ""),
-                    placeholder="Additional segments...", height=80,
-                    key="input_target_secondary",
-                    on_change=update_field("target_secondary"))
+        col_sec, col_sec_btn = st.columns([5, 1])
+        with col_sec:
+            st.text_area("Secondary Target Audience", 
+                        value=st.session_state.form_data.get("target_secondary", ""),
+                        placeholder="Additional segments...", height=80,
+                        key="input_target_secondary",
+                        on_change=update_field("target_secondary"))
+        with col_sec_btn:
+            st.write("")
+            if st.button("✨", key="ai_target_secondary", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("target_secondary", "Secondary Target Audience")
         
         col_demo, col_demo_btn = st.columns([5, 1])
         with col_demo:
@@ -429,16 +435,29 @@ elif st.session_state.current_step == 2:
             if st.button("✨", key="ai_target_psychographics", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("target_psychographics", "Psychographics")
                 
-        st.text_area("Buyer Personas", 
-                    value=st.session_state.form_data.get("target_personas", ""),
-                    placeholder="Describe typical customers...", height=80,
-                    key="input_target_personas",
-                    on_change=update_field("target_personas"))
-        st.text_area("Customer Needs & Problems Solved", 
-                    value=st.session_state.form_data.get("target_problems", ""),
-                    placeholder="Pain points addressed...", height=80,
-                    key="input_target_problems",
-                    on_change=update_field("target_problems"))
+        col_pers, col_pers_btn = st.columns([5, 1])
+        with col_pers:
+            st.text_area("Buyer Personas", 
+                        value=st.session_state.form_data.get("target_personas", ""),
+                        placeholder="Describe typical customers...", height=80,
+                        key="input_target_personas",
+                        on_change=update_field("target_personas"))
+        with col_pers_btn:
+            st.write("")
+            if st.button("✨", key="ai_target_personas", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("target_personas", "Buyer Personas")
+                
+        col_prob, col_prob_btn = st.columns([5, 1])
+        with col_prob:
+            st.text_area("Customer Needs & Problems Solved", 
+                        value=st.session_state.form_data.get("target_problems", ""),
+                        placeholder="Pain points addressed...", height=80,
+                        key="input_target_problems",
+                        on_change=update_field("target_problems"))
+        with col_prob_btn:
+            st.write("")
+            if st.button("✨", key="ai_target_problems", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("target_problems", "Customer Needs & Problems")
 
 elif st.session_state.current_step == 3:
     # 3. Market & Competition Data
