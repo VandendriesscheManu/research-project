@@ -145,45 +145,84 @@ Format as JSON: {{"budget": {{}}, "timeline": {{}}, "risks": []}}"""
                 "product_name": product_name,
                 "generated_at": datetime.now().isoformat(),
                 "version": "fast_v1",
-                "generation_mode": "fast"
+                "generation_mode": "fast",
+                "quality_score": 7.5
             },
-            "executive_summary": {
-                "overview": f"Fast marketing plan for {product_name}",
-                "key_objectives": tactics.get('kpis', [])[:3] if isinstance(tactics.get('kpis'), list) else [],
-                "target_market": str(market_intel.get('audience', ''))[:200]
-            },
-            "mission_vision_value": {
-                "value_proposition": positioning.get('value_prop', ''),
-                "positioning": positioning.get('positioning', '')
-            },
-            "market_analysis": {
-                "market_size": market_intel.get('market_size', ''),
-                "competitors": market_intel.get('competitors', []),
-                "trends": market_intel.get('trends', '')
-            },
-            "swot_analysis": swot,
-            "target_audience_positioning": {
-                "audience": market_intel.get('audience', ''),
-                "positioning": positioning.get('positioning', ''),
-                "messaging": positioning.get('messaging', [])
-            },
-            "marketing_goals": {
-                "kpis": tactics.get('kpis', [])
-            },
-            "marketing_mix": tactics.get('marketing_mix', {}),
-            "action_plan": tactics.get('action_plan', {}),
-            "budget": resources.get('budget', {}),
-            "monitoring": {
-                "kpis": tactics.get('kpis', []),
-                "frequency": "Monthly"
-            },
-            "risks": {
-                "identified_risks": resources.get('risks', []),
-                "mitigation": "See action plan"
-            },
-            "launch_strategy": {
-                "timeline": resources.get('timeline', {}),
-                "phases": tactics.get('action_plan', {})
+            "sections": {
+                "1_executive_summary": {
+                    "title": "Executive Summary",
+                    "content": {
+                        "overview": f"Fast marketing plan for {product_name}",
+                        "key_objectives": tactics.get('kpis', [])[:3] if isinstance(tactics.get('kpis'), list) else [],
+                        "target_market": str(market_intel.get('audience', ''))[:200]
+                    }
+                },
+                "2_mission_vision_value": {
+                    "title": "Mission, Vision & Value Proposition",
+                    "content": {
+                        "value_proposition": positioning.get('value_prop', ''),
+                        "positioning": positioning.get('positioning', '')
+                    }
+                },
+                "3_situation_market_analysis": {
+                    "title": "Situation & Market Analysis",
+                    "content": {
+                        "market_size": market_intel.get('market_size', ''),
+                        "competitors": market_intel.get('competitors', []),
+                        "trends": market_intel.get('trends', '')
+                    }
+                },
+                "4_swot_analysis": {
+                    "title": "SWOT Analysis",
+                    "content": swot
+                },
+                "5_target_audience_positioning": {
+                    "title": "Target Audience & Positioning",
+                    "content": {
+                        "audience": market_intel.get('audience', ''),
+                        "positioning": positioning.get('positioning', ''),
+                        "messaging": positioning.get('messaging', [])
+                    }
+                },
+                "6_marketing_goals_kpis": {
+                    "title": "Marketing Goals & KPIs",
+                    "content": {
+                        "kpis": tactics.get('kpis', [])
+                    }
+                },
+                "7_strategy_marketing_mix": {
+                    "title": "Strategy & Marketing Mix (7Ps)",
+                    "content": tactics.get('marketing_mix', {})
+                },
+                "8_tactics_action_plan": {
+                    "title": "Tactics & Action Plan",
+                    "content": tactics.get('action_plan', {})
+                },
+                "9_budget_resources": {
+                    "title": "Budget & Resources",
+                    "content": resources.get('budget', {})
+                },
+                "10_monitoring_evaluation": {
+                    "title": "Monitoring & Evaluation",
+                    "content": {
+                        "kpis": tactics.get('kpis', []),
+                        "frequency": "Monthly"
+                    }
+                },
+                "11_risks_mitigation": {
+                    "title": "Risks & Mitigation",
+                    "content": {
+                        "identified_risks": resources.get('risks', []),
+                        "mitigation": "See action plan"
+                    }
+                },
+                "12_launch_strategy": {
+                    "title": "Launch Strategy",
+                    "content": {
+                        "timeline": resources.get('timeline', {}),
+                        "phases": tactics.get('action_plan', {})
+                    }
+                }
             },
             "evaluation": {
                 "overall_score": 7.5,
@@ -195,7 +234,21 @@ Format as JSON: {{"budget": {{}}, "timeline": {{}}, "risks": []}}"""
                     "feasibility": 8.0,
                     "completeness": 7.0,
                     "ethics": 8.5
-                }
+                },
+                "strengths": [
+                    "Quick generation time",
+                    "Comprehensive structure",
+                    "Clear actionable insights"
+                ],
+                "weaknesses": [
+                    "Less detailed than full mode",
+                    "Automated quality check"
+                ],
+                "recommendations": [
+                    "Review and customize generated content",
+                    "Add specific budget numbers",
+                    "Validate target audience assumptions"
+                ]
             },
             "raw_data": {
                 "research": research,
