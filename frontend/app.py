@@ -851,7 +851,7 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                     "4. SWOT",
                     "5. Target & Positioning",
                     "6. Goals & KPIs",
-                    "7. Marketing Mix",
+                    "7. Marketing Mix (7Ps)",
                     "8. Action Plan",
                     "9. Budget",
                     "10. Monitoring",

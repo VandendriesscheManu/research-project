@@ -40,28 +40,71 @@ class FastMarketingOrchestrator:
         
         product_name = product_data.get('product_name', 'Unknown Product')
         category = product_data.get('product_category', 'general')
+        target = product_data.get('target_primary', 'general consumers')
+        competitors = product_data.get('competitors', 'market competitors')
         
-        print("  → Generating market analysis...")
-        market_prompt = f"""Analyze the market for {product_name} ({category}).
-Provide BRIEF analysis (max 400 words):
-1. Market size & growth potential
-2. Top 3-4 competitors
-3. Target audience demographics
-4. Current market trends
+        print("  → Generating situation & market analysis...")
+        market_prompt = f"""Perform a complete SITUATION & MARKET ANALYSIS for {product_name} ({category}). Respond in ENGLISH.
 
-Format as JSON: {{"market_size": "...", "competitors": ["..."], "audience": "...", "trends": "..."}}"""
+Include:
+1. **Current Market Situation**: Market size, growth rate, maturity phase
+2. **Market Trends**: Current trends affecting the market, consumer behavior shifts
+3. **Competitors**: Identify top 4-5 competitors, their market share, strengths, positioning
+4. **Target Audience**: Demographics (age, gender, income, education, location), psychographics (lifestyle, values, interests)
+5. **External Environment**: PEST factors (Political, Economic, Social, Technological) affecting the market
+6. **Market Opportunities**: Gaps in the market, underserved segments
+
+Provide detailed analysis (500-600 words) in ENGLISH.
+Format as JSON: {{
+    "current_situation": "...",
+    "market_size": "...",
+    "growth_rate": "...",
+    "trends": ["trend1", "trend2", "trend3"],
+    "competitors": [
+        {{"name": "...", "market_share": "...", "strengths": "...", "positioning": "..."}},
+        ...
+    ],
+    "target_demographics": {{"age": "...", "gender": "...", "income": "...", "location": "..."}},
+    "target_psychographics": {{"lifestyle": "...", "values": "...", "interests": "..."}},
+    "pest_analysis": {{
+        "political": "...",
+        "economic": "...",
+        "social": "...",
+        "technological": "..."
+    }},
+    "market_opportunities": ["opportunity1", "opportunity2"]
+}}"""
         
         market_result = self._generate(market_prompt, 600)
         
-        print("  → Generating SWOT analysis...")
-        swot_prompt = f"""Create a SWOT analysis for {product_name}.
-Be concise (max 300 words):
-- Strengths (3 points)
-- Weaknesses (3 points)
-- Opportunities (3 points)
-- Threats (3 points)
+        print("  → Generating comprehensive SWOT analysis...")
+        swot_prompt = f"""Create a detailed SWOT ANALYSIS for {product_name}. Respond in ENGLISH.
 
-Format as JSON: {{"strengths": [], "weaknesses": [], "opportunities": [], "threats": []}}"""
+Analyze:
+- **Strengths (Internal)**: 4-5 key strengths (unique features, capabilities, resources, advantages)
+- **Weaknesses (Internal)**: 4-5 weaknesses (limitations, gaps, vulnerabilities, disadvantages)
+- **Opportunities (External)**: 4-5 market opportunities (trends, gaps, partnerships, growth areas)
+- **Threats (External)**: 4-5 threats (competition, market risks, economic factors, technological disruption)
+
+Each point should be specific and actionable (400-500 words total) in ENGLISH.
+Format as JSON: {{
+    "strengths": [
+        {{"title": "...", "description": "...", "impact": "high/medium/low"}},
+        ...
+    ],
+    "weaknesses": [
+        {{"title": "...", "description": "...", "mitigation": "..."}},
+        ...
+    ],
+    "opportunities": [
+        {{"title": "...", "description": "...", "potential": "..."}},
+        ...
+    ],
+    "threats": [
+        {{"title": "...", "description": "...", "likelihood": "high/medium/low"}},
+        ...
+    ]
+}}"""
         
         swot_result = self._generate(swot_prompt, 500)
         
@@ -76,37 +119,166 @@ Format as JSON: {{"strengths": [], "weaknesses": [], "opportunities": [], "threa
         
         product_name = product_data.get('product_name')
         budget = product_data.get('marketing_budget', 'moderate')
+        launch_date = product_data.get('launch_date', 'Q1 2026')
         
-        print("  → Generating positioning & messaging...")
-        positioning_prompt = f"""For {product_name}, create BRIEF (max 250 words):
-1. Unique positioning statement
-2. Key messaging (3 main points)
-3. Value proposition
+        print("  → Generating mission, vision, positioning & messaging...")
+        positioning_prompt = f"""Create comprehensive MISSION, VISION, VALUE PROPOSITION & POSITIONING for {product_name}. Respond in ENGLISH.
 
-Format as JSON: {{"positioning": "...", "messaging": [], "value_prop": "..."}}"""
-        
-        positioning = self._generate(positioning_prompt, 400)
-        
-        print("  → Generating marketing tactics...")
-        tactics_prompt = f"""Marketing tactics for {product_name} (budget: {budget}).
-Concise (max 350 words):
-1. Marketing Mix - 4Ps (Product, Price, Place, Promotion)
-2. Action Plan (Pre-launch, Launch, Post-launch)
-3. KPIs (5-7 metrics)
+Include:
+1. **Mission Statement**: What is the purpose and goal of the project?
+2. **Vision Statement**: Long-term aspiration and impact
+3. **Value Proposition**: What makes the product unique? Why should customers choose it over competitors?
+4. **Positioning Statement**: How is the product positioned in the market relative to competitors? What place does it occupy in the consumer's mind?
+5. **Key Messaging**: 3-4 main communication messages
+6. **Brand Personality**: Tone, values, characteristics
 
-Format as JSON: {{"marketing_mix": {{}}, "action_plan": {{}}, "kpis": []}}"""
+Detailed (400-500 words) in ENGLISH.
+Format as JSON: {{
+    "mission": "...",
+    "vision": "...",
+    "value_proposition": "...",
+    "unique_selling_points": ["USP1", "USP2", "USP3"],
+    "positioning_statement": "...",
+    "positioning_vs_competitors": "...",
+    "messaging": ["message1", "message2", "message3"],
+    "brand_personality": {{"tone": "...", "values": ["..."], "characteristics": "..."}}
+}}"""
         
-        tactics = self._generate(tactics_prompt, 500)
+        positioning = self._generate(positioning_prompt, 500)
         
-        print("  → Generating budget & risks...")
-        resources_prompt = f"""Resources for {product_name} (max 250 words):
-1. Budget allocation (by channel)
-2. Timeline milestones
-3. Top 3 risks
+        print("  → Generating marketing goals, KPIs & marketing mix (7Ps)...")
+        tactics_prompt = f"""Create MARKETING GOALS, KPIs & MARKETING MIX (7Ps) for {product_name} (budget: {budget}). Respond in ENGLISH.
 
-Format as JSON: {{"budget": {{}}, "timeline": {{}}, "risks": []}}"""
+**1. Marketing Goals & KPIs**:
+- Define 5-7 SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound)
+- Include KPIs: conversion rate, market share, brand awareness, customer acquisition cost, ROI, customer lifetime value
+- Set targets for each KPI
+
+**2. Marketing Mix (7Ps Strategy)**:
+- **Product**: Features, quality, design, branding, packaging, variants
+- **Price**: Pricing strategy, positioning, discounts, payment terms
+- **Place**: Distribution channels, locations, logistics, online/offline presence
+- **Promotion**: Advertising, PR, content marketing, social media, influencer partnerships
+- **People**: Staff, customer service, brand ambassadors
+- **Process**: Customer journey, purchase process, delivery, after-sales
+- **Physical Evidence**: Store design, website UX, packaging, testimonials
+
+Comprehensive (600-700 words) in ENGLISH.
+Format als JSON: {{
+    "goals": [
+        {{"goal": "...", "target": "...", "deadline": "...", "smart": true}},
+        ...
+    ],
+    "kpis": [
+        {{"name": "...", "target": "...", "measurement": "..."}},
+        ...
+    ],
+    "marketing_mix": {{
+        "product": {{"features": "...", "quality": "...", "design": "...", "branding": "...", "packaging": "..."}},
+        "price": {{"strategy": "...", "positioning": "...", "tactics": "..."}},
+        "place": {{"channels": ["..."], "distribution": "...", "logistics": "..."}},
+        "promotion": {{"advertising": "...", "pr": "...", "content": "...", "social_media": "...", "influencers": "..."}},
+        "people": {{"staff": "...", "customer_service": "...", "ambassadors": "..."}},
+        "process": {{"customer_journey": "...", "purchase_flow": "...", "delivery": "..."}},
+        "physical_evidence": {{"store_design": "...", "website_ux": "...", "testimonials": "..."}}
+    }}
+}}"""
         
-        resources = self._generate(resources_prompt, 400)
+        tactics = self._generate(tactics_prompt, 600)
+        
+        print("  → Generating action plan, budget, risks & launch strategy...")
+        resources_prompt = f"""Create TACTICS, ACTION PLAN, BUDGET, RISKS & LAUNCH STRATEGY for {product_name}. Respond in ENGLISH.
+
+**1. Tactics & Action Plan**:
+- **Pre-Launch Phase**: Teaser campaigns, influencer outreach, email list building, PR preparations
+- **Launch Phase**: Grand opening, launch event, media coverage, promotional offers, advertising blitz
+- **Post-Launch Phase**: Customer retention, feedback collection, optimization, scaling
+- Timeline with specific dates/weeks for each activity
+
+**2. Budget & Resources**:
+- Detailed budget allocation by channel (social media, ads, PR, events, content, etc.)
+- Cost estimation per activity
+- Expected ROI and revenue projections
+- Required resources (team, tools, agencies)
+
+**3. Monitoring & Evaluation**:
+- How progress will be measured (weekly/monthly dashboards)
+- When evaluations take place (monthly reviews, quarterly assessments)
+- Adjustment criteria to pivot the plan
+
+**4. Risks & Mitigation**:
+- Identify 5-6 potential risks (market failure, technical problems, competition, budget overruns, poor adoption)
+- Mitigation strategy for each risk
+- Contingency plans
+
+**5. Launch Strategy for New Product**:
+- Product introduction plan (soft launch vs. hard launch)
+- Adoption strategy (early adopters → mass market)
+- Launch phases and milestones
+- Success criteria for each phase
+
+Comprehensive (700-800 words) in ENGLISH.
+Format as JSON: {{
+    "action_plan": {{
+        "pre_launch": {{"activities": ["..."], "timeline": "...", "budget": "..."}},
+        "launch": {{"activities": ["..."], "timeline": "...", "budget": "..."}},
+        "post_launch": {{"activities": ["..."], "timeline": "...", "budget": "..."}}
+    }},
+    "budget": {{
+        "total": "...",
+        "allocation": {{
+            "social_media": "...",
+            "paid_ads": "...",
+            "pr": "...",
+            "events": "...",
+            "content": "...",
+            "influencers": "...",
+            "other": "..."
+        }},
+        "cost_per_activity": [{{"activity": "...", "cost": "..."}}, ...],
+        "roi_projection": "...",
+        "revenue_forecast": "..."
+    }},
+    "monitoring": {{
+        "measurement_frequency": "...",
+        "evaluation_schedule": ["..."],
+        "dashboard_metrics": ["..."],
+        "adjustment_triggers": ["..."]
+    }},
+    "risks": [
+        {{
+            "id": "...",
+            "description": "...",
+            "likelihood": "high/medium/low",
+            "impact": "high/medium/low",
+            "mitigation": "...",
+            "contingency": "..."
+        }},
+        ...
+    ],
+    "launch_strategy": {{
+        "approach": "soft_launch / hard_launch / phased_rollout",
+        "target_date": "{launch_date}",
+        "adoption_phases": {{
+            "innovators": {{"strategy": "...", "timeline": "..."}},
+            "early_adopters": {{"strategy": "...", "timeline": "..."}},
+            "early_majority": {{"strategy": "...", "timeline": "..."}},
+            "late_majority": {{"strategy": "...", "timeline": "..."}}
+        }},
+        "launch_phases": [
+            {{"phase": "...", "activities": ["..."], "success_criteria": "..."}},
+            ...
+        ],
+        "milestones": [
+            {{"milestone": "...", "date": "...", "criteria": "..."}},
+            ...
+        ]
+    }}
+}}"""
+        
+        resources = self._generate(resources_prompt, 700)
+        
+        resources = self._generate(resources_prompt, 700)
         
         return {
             "positioning": self._parse_json(positioning),
@@ -140,6 +312,16 @@ Format as JSON: {{"budget": {{}}, "timeline": {{}}, "risks": []}}"""
         tactics = strategy.get('tactics', {})
         resources = strategy.get('resources', {})
         
+        # Create executive summary combining all key insights
+        exec_summary = {
+            "overview": f"Complete marketing plan for {product_name}. {positioning.get('value_proposition', '')}",
+            "product_description": product_data.get('product_features', 'Innovative product in the market'),
+            "objectives": [goal.get('goal', '') for goal in tactics.get('goals', [])[:3]] if tactics.get('goals') else [],
+            "strategy_overview": positioning.get('positioning_statement', ''),
+            "expected_results": f"ROI: {resources.get('budget', {}).get('roi_projection', 'positive')}",
+            "target_market": market_intel.get('target_demographics', {})
+        }
+        
         return {
             "metadata": {
                 "product_name": product_name,
@@ -150,78 +332,89 @@ Format as JSON: {{"budget": {{}}, "timeline": {{}}, "risks": []}}"""
             },
             "sections": {
                 "1_executive_summary": {
-                    "title": "Executive Summary",
-                    "content": {
-                        "overview": f"Fast marketing plan for {product_name}",
-                        "key_objectives": tactics.get('kpis', [])[:3] if isinstance(tactics.get('kpis'), list) else [],
-                        "target_market": str(market_intel.get('audience', ''))[:200]
-                    }
+                    "title": "1. Executive Summary",
+                    "description": "Een kort overzicht van het hele plan: wat het product is, wat de doelstellingen zijn, welke strategie wordt gevolgd en welke resultaten verwacht worden.",
+                    "content": exec_summary
                 },
                 "2_mission_vision_value": {
-                    "title": "Mission, Vision & Value Proposition",
+                    "title": "2. Missie, Visie en Waardepropositie",
+                    "description": "Wat is het doel en de visie van het project? Wat maakt het product uniek en waarom zouden klanten het kiezen?",
                     "content": {
-                        "value_proposition": positioning.get('value_prop', ''),
-                        "positioning": positioning.get('positioning', '')
+                        "mission": positioning.get('mission', ''),
+                        "vision": positioning.get('vision', ''),
+                        "value_proposition": positioning.get('value_proposition', ''),
+                        "unique_selling_points": positioning.get('unique_selling_points', []),
+                        "brand_personality": positioning.get('brand_personality', {})
                     }
                 },
                 "3_situation_market_analysis": {
-                    "title": "Situation & Market Analysis",
+                    "title": "3. Situatie- en Marktanalyse",
+                    "description": "Analyse van de huidige situatie, de interne sterktes en zwaktes, en de externe markt (kansen en bedreigingen). Bevat ook een SWOT- en PEST-analyse.",
                     "content": {
+                        "current_situation": market_intel.get('current_situation', ''),
                         "market_size": market_intel.get('market_size', ''),
+                        "growth_rate": market_intel.get('growth_rate', ''),
+                        "trends": market_intel.get('trends', []),
                         "competitors": market_intel.get('competitors', []),
-                        "trends": market_intel.get('trends', '')
+                        "pest_analysis": market_intel.get('pest_analysis', {}),
+                        "market_opportunities": market_intel.get('market_opportunities', [])
                     }
                 },
                 "4_swot_analysis": {
-                    "title": "SWOT Analysis",
+                    "title": "4. SWOT-analyse",
+                    "description": "Overzicht van de sterktes, zwaktes, kansen en bedreigingen die invloed hebben op het product of de organisatie.",
                     "content": swot
                 },
                 "5_target_audience_positioning": {
-                    "title": "Target Audience & Positioning",
+                    "title": "5. Doelgroepen en Positionering",
+                    "description": "Wie is de doelgroep? Hoe wordt het product gepositioneerd ten opzichte van concurrenten en welke plaats krijgt het in het hoofd van de consument?",
                     "content": {
-                        "audience": market_intel.get('audience', ''),
-                        "positioning": positioning.get('positioning', ''),
+                        "target_demographics": market_intel.get('target_demographics', {}),
+                        "target_psychographics": market_intel.get('target_psychographics', {}),
+                        "positioning_statement": positioning.get('positioning_statement', ''),
+                        "positioning_vs_competitors": positioning.get('positioning_vs_competitors', ''),
                         "messaging": positioning.get('messaging', [])
                     }
                 },
                 "6_marketing_goals_kpis": {
-                    "title": "Marketing Goals & KPIs",
+                    "title": "6. Marketingdoelen en KPI's",
+                    "description": "Duidelijke en meetbare doelstellingen (SMART). Inclusief de belangrijkste prestatie-indicatoren om succes te meten, zoals conversieratio of marktaandeel.",
                     "content": {
+                        "goals": tactics.get('goals', []),
                         "kpis": tactics.get('kpis', [])
                     }
                 },
                 "7_strategy_marketing_mix": {
-                    "title": "Strategy & Marketing Mix (7Ps)",
+                    "title": "7. Strategie en Marketingmix (7Ps)",
+                    "description": "De overkoepelende strategie om de doelen te behalen. Focus op de marketingmix (Product, Prijs, Plaats, Promotie, People, Process, Physical Evidence).",
                     "content": tactics.get('marketing_mix', {})
                 },
                 "8_tactics_action_plan": {
-                    "title": "Tactics & Action Plan",
-                    "content": tactics.get('action_plan', {})
+                    "title": "8. Tactieken en Actieplan",
+                    "description": "Concrete acties en een tijdlijn van activiteiten (pre-launch, lancering en opvolging).",
+                    "content": resources.get('action_plan', {})
                 },
                 "9_budget_resources": {
-                    "title": "Budget & Resources",
+                    "title": "9. Budget en Middelen",
+                    "description": "Raming van de kosten, benodigde middelen en verwachte opbrengsten. Inclusief ROI-inschatting.",
                     "content": resources.get('budget', {})
                 },
                 "10_monitoring_evaluation": {
-                    "title": "Monitoring & Evaluation",
-                    "content": {
-                        "kpis": tactics.get('kpis', []),
-                        "frequency": "Monthly"
-                    }
+                    "title": "10. Monitoring en Evaluatie",
+                    "description": "Hoe de voortgang wordt gemeten en wanneer evaluaties plaatsvinden om het plan bij te sturen.",
+                    "content": resources.get('monitoring', {})
                 },
                 "11_risks_mitigation": {
-                    "title": "Risks & Mitigation",
+                    "title": "11. Risico's en Mitigatie",
+                    "description": "Overzicht van mogelijke risico's (zoals marktfalen of technische problemen) en hoe deze worden opgevangen.",
                     "content": {
-                        "identified_risks": resources.get('risks', []),
-                        "mitigation": "See action plan"
+                        "risks": resources.get('risks', [])
                     }
                 },
                 "12_launch_strategy": {
-                    "title": "Launch Strategy",
-                    "content": {
-                        "timeline": resources.get('timeline', {}),
-                        "phases": tactics.get('action_plan', {})
-                    }
+                    "title": "12. Lanceringstrategie voor Nieuw Product",
+                    "description": "Planning van de productintroductie, adoptiestrategie en fases van de lancering.",
+                    "content": resources.get('launch_strategy', {})
                 }
             },
             "evaluation": {
