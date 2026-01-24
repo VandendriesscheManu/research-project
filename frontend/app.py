@@ -38,6 +38,27 @@ def get_api_base_url(custom_gist_url=None):
     # Final fallback
     return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 
+# Helper function to display nested dictionary content
+def display_dict_content(data, level=0):
+    """Recursively display dictionary content in a readable format"""
+    for key, value in data.items():
+        header = key.replace('_', ' ').title()
+        
+        if isinstance(value, dict):
+            st.markdown(f"{'#' * (3 + level)} {header}")
+            display_dict_content(value, level + 1)
+        elif isinstance(value, list):
+            st.markdown(f"**{header}:**")
+            for item in value:
+                if isinstance(item, dict):
+                    st.markdown("---")
+                    display_dict_content(item, level + 1)
+                else:
+                    st.markdown(f"- {item}")
+        else:
+            st.markdown(f"**{header}:** {value}")
+            st.write("")
+
 st.title("📊 Marketing Plan Generator")
 st.caption("AI-powered marketing plan creation: Streamlit → FastAPI → MCP → Groq/Ollama → Postgres")
 
@@ -902,24 +923,3 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
     except Exception as e:
         st.error(f"❌ Error loading marketing plan: {str(e)}")
-
-# Helper function to display nested dictionary content
-def display_dict_content(data, level=0):
-    """Recursively display dictionary content in a readable format"""
-    for key, value in data.items():
-        header = key.replace('_', ' ').title()
-        
-        if isinstance(value, dict):
-            st.markdown(f"{'#' * (3 + level)} {header}")
-            display_dict_content(value, level + 1)
-        elif isinstance(value, list):
-            st.markdown(f"**{header}:**")
-            for item in value:
-                if isinstance(item, dict):
-                    st.markdown("---")
-                    display_dict_content(item, level + 1)
-                else:
-                    st.markdown(f"- {item}")
-        else:
-            st.markdown(f"**{header}:** {value}")
-            st.write("")
