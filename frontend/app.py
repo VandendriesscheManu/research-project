@@ -369,10 +369,17 @@ if st.session_state.current_step == 1:
         if st.button("✨", key="ai_product_branding", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
             get_ai_suggestion("product_branding", "Branding & Packaging")
             
-    st.text_area("Product Variants or Lines", 
-                value=st.session_state.form_data.get("product_variants", ""),
-                placeholder="Different sizes, colors, editions...",
-                key="input_product_variants",
+    col_var, col_var_btn = st.columns([10, 1])
+    with col_var:
+        st.text_area("Product Variants or Lines", 
+                    value=st.session_state.form_data.get("product_variants", ""),
+                    placeholder="Different sizes, colors, editions...",
+                    key="input_product_variants",
+                    on_change=update_field("product_variants"))
+    with col_var_btn:
+        st.write("")  # Spacing
+        if st.button("✨", key="ai_product_variants", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+            get_ai_suggestion("product_variants", "Product Variants")
                 on_change=update_field("product_variants"))
 
 elif st.session_state.current_step == 2:
