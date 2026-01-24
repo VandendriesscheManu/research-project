@@ -572,14 +572,14 @@ with col3:
                             st.error("❌ Unauthorized - check your API key")
                         else:
                             response.raise_for_status()
-                            result = response.json().get('brief_id')
+                            result = response.json()
+                            
+                            # Save brief_id in session state
+                            st.session_state.brief_id = result.get('brief_id')
                             st.session_state.brief_saved = True
                             
-                            st.success(f"✅ Product information saved successfully! (Brief ID: {st.session_state.brief_id
-                            st.session_state.brief_saved = True
-                            
-                            st.success(f"✅ Product information saved successfully! (Brief ID: {result['brief_id']})")
-                            st.info(f"📝 {result['message']}")
+                            st.success(f"✅ Product information saved successfully! (Brief ID: {st.session_state.brief_id})")
+                            st.info(f"📝 {result.get('message', 'Saved successfully')}")
                             
                             # Show collected data
                             with st.expander("📋 Saved Product Information"):
