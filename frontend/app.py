@@ -380,7 +380,6 @@ if st.session_state.current_step == 1:
         st.write("")  # Spacing
         if st.button("✨", key="ai_product_variants", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
             get_ai_suggestion("product_variants", "Product Variants")
-                on_change=update_field("product_variants"))
 
 elif st.session_state.current_step == 2:
     # 2. Target Audience Information
