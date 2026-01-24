@@ -530,29 +530,17 @@ elif st.session_state.current_step == 4:
     st.markdown("### 4️⃣ Price & Margin Data")
     col1, col2 = st.columns(2)
     with col1:
-        col_cost, col_cost_btn = st.columns([5, 1])
-        with col_cost:
-            st.text_input("Production Cost/Cost Price", 
-                         value=st.session_state.form_data.get("production_cost", ""),
-                         placeholder="e.g., $12 per unit",
-                         key="input_production_cost",
-                         on_change=update_field("production_cost"))
-        with col_cost_btn:
-            st.write("")
-            if st.button("✨", key="ai_production_cost", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
-                get_ai_suggestion("production_cost", "Production Cost")
+        st.text_input("Production Cost/Cost Price", 
+                     value=st.session_state.form_data.get("production_cost", ""),
+                     placeholder="e.g., $12 per unit",
+                     key="input_production_cost",
+                     on_change=update_field("production_cost"))
                 
-        col_margin, col_margin_btn = st.columns([5, 1])
-        with col_margin:
-            st.text_input("Desired Margin", 
-                         value=st.session_state.form_data.get("desired_margin", ""),
-                         placeholder="e.g., 40%",
-                         key="input_desired_margin",
-                         on_change=update_field("desired_margin"))
-        with col_margin_btn:
-            st.write("")
-            if st.button("✨", key="ai_desired_margin", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
-                get_ai_suggestion("desired_margin", "Desired Margin")
+        st.text_input("Desired Margin", 
+                     value=st.session_state.form_data.get("desired_margin", ""),
+                     placeholder="e.g., 40%",
+                     key="input_desired_margin",
+                     on_change=update_field("desired_margin"))
                 
     with col2:
         col_price, col_price_btn = st.columns([5, 1])
@@ -567,11 +555,17 @@ elif st.session_state.current_step == 4:
             if st.button("✨", key="ai_suggested_price", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
                 get_ai_suggestion("suggested_price", "Suggested Price")
                 
-        st.text_area("Price Elasticity & Demand Expectations", 
-                    value=st.session_state.form_data.get("price_elasticity", ""),
-                    placeholder="Expected demand at different price points...",
-                    key="input_price_elasticity",
-                    on_change=update_field("price_elasticity"))
+        col_elas, col_elas_btn = st.columns([5, 1])
+        with col_elas:
+            st.text_area("Price Elasticity & Demand Expectations", 
+                        value=st.session_state.form_data.get("price_elasticity", ""),
+                        placeholder="Expected demand at different price points...",
+                        key="input_price_elasticity",
+                        on_change=update_field("price_elasticity"))
+        with col_elas_btn:
+            st.write("")
+            if st.button("✨", key="ai_price_elasticity", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
+                get_ai_suggestion("price_elasticity", "Price Elasticity")
 
 elif st.session_state.current_step == 5:
     # 5. Promotion & Communication Data
