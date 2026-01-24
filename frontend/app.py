@@ -326,7 +326,8 @@ if st.session_state.current_step == 1:
                          placeholder="e.g., Reusable Water Bottles",
                          key="input_product_category",
                          on_change=update_field("product_category"),
-                         label_visibility="visible")
+                         label_visibility="visible",
+                         help="Define the product category or market segment (e.g., consumer electronics, sustainable products, home goods)")
         with col_cat_btn:
             st.write("")  # Spacing
             if st.button("✨", key="ai_product_category", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -339,7 +340,8 @@ if st.session_state.current_step == 1:
                         value=st.session_state.form_data.get("product_features", ""),
                         placeholder="List main features...", height=100,
                         key="input_product_features",
-                        on_change=update_field("product_features"))
+                        on_change=update_field("product_features"),
+                        help="List the main features, technical specifications, and functionalities that define your product's capabilities")
         with col_feat_btn:
             st.write("")  # Spacing
             if st.button("✨", key="ai_product_features", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -351,7 +353,8 @@ if st.session_state.current_step == 1:
                         value=st.session_state.form_data.get("product_usp", ""),
                         placeholder="What makes it unique?", height=100,
                         key="input_product_usp",
-                        on_change=update_field("product_usp"))
+                        on_change=update_field("product_usp"),
+                        help="Describe what makes your product unique and different from competitors. What specific benefits set it apart?")
         with col_usp_btn:
             st.write("")  # Spacing
             if st.button("✨", key="ai_product_usp", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -363,7 +366,8 @@ if st.session_state.current_step == 1:
                     value=st.session_state.form_data.get("product_branding", ""),
                     placeholder="Describe visual identity, packaging design...",
                     key="input_product_branding",
-                    on_change=update_field("product_branding"))
+                    on_change=update_field("product_branding"),
+                    help="Describe the visual identity, packaging design, logo, colors, materials, and overall brand aesthetic that represents your product")
     with col_brand_btn:
         st.write("")  # Spacing
         if st.button("✨", key="ai_product_branding", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -375,7 +379,8 @@ if st.session_state.current_step == 1:
                     value=st.session_state.form_data.get("product_variants", ""),
                     placeholder="Different sizes, colors, editions...",
                     key="input_product_variants",
-                    on_change=update_field("product_variants"))
+                    on_change=update_field("product_variants"),
+                    help="List different variants of your product (e.g., sizes, colors, special editions, bundle options, limited releases)")
     with col_var_btn:
         st.write("")  # Spacing
         if st.button("✨", key="ai_product_variants", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -392,7 +397,8 @@ elif st.session_state.current_step == 2:
                         value=st.session_state.form_data.get("target_primary", ""),
                         placeholder="Main customer segment...", height=80,
                         key="input_target_primary",
-                        on_change=update_field("target_primary"))
+                        on_change=update_field("target_primary"),
+                        help="Define your main customer segment - who is most likely to buy and use your product regularly?")
         with col_prim_btn:
             st.write("")
             if st.button("✨", key="ai_target_primary", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -404,7 +410,8 @@ elif st.session_state.current_step == 2:
                         value=st.session_state.form_data.get("target_secondary", ""),
                         placeholder="Additional segments...", height=80,
                         key="input_target_secondary",
-                        on_change=update_field("target_secondary"))
+                        on_change=update_field("target_secondary"),
+                        help="Identify additional customer segments that might be interested, such as gift buyers, secondary users, or niche markets")
         with col_sec_btn:
             st.write("")
             if st.button("✨", key="ai_target_secondary", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -416,7 +423,8 @@ elif st.session_state.current_step == 2:
                         value=st.session_state.form_data.get("target_demographics", ""),
                         placeholder="Age, gender, location, income...", height=80,
                         key="input_target_demographics",
-                        on_change=update_field("target_demographics"))
+                        on_change=update_field("target_demographics"),
+                        help="Provide demographic details: age range, gender, geographic location, income level, education, occupation, family status")
         with col_demo_btn:
             st.write("")
             if st.button("✨", key="ai_target_demographics", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -429,7 +437,8 @@ elif st.session_state.current_step == 2:
                         value=st.session_state.form_data.get("target_psychographics", ""),
                         placeholder="Interests, lifestyle, buying behavior...", height=80,
                         key="input_target_psychographics",
-                        on_change=update_field("target_psychographics"))
+                        on_change=update_field("target_psychographics"),
+                        help="Describe psychological attributes: lifestyle, values, interests, attitudes, buying behavior, brand preferences, social status")
         with col_psych_btn:
             st.write("")
             if st.button("✨", key="ai_target_psychographics", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -441,7 +450,8 @@ elif st.session_state.current_step == 2:
                         value=st.session_state.form_data.get("target_personas", ""),
                         placeholder="Describe typical customers...", height=80,
                         key="input_target_personas",
-                        on_change=update_field("target_personas"))
+                        on_change=update_field("target_personas"),
+                        help="Create detailed profiles of typical customers with names, backgrounds, motivations, goals, and pain points")
         with col_pers_btn:
             st.write("")
             if st.button("✨", key="ai_target_personas", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -453,7 +463,8 @@ elif st.session_state.current_step == 2:
                         value=st.session_state.form_data.get("target_problems", ""),
                         placeholder="Pain points addressed...", height=80,
                         key="input_target_problems",
-                        on_change=update_field("target_problems"))
+                        on_change=update_field("target_problems"),
+                        help="Identify the specific customer pain points, needs, and problems that your product solves or addresses")
         with col_prob_btn:
             st.write("")
             if st.button("✨", key="ai_target_problems", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -470,7 +481,8 @@ elif st.session_state.current_step == 3:
                          value=st.session_state.form_data.get("market_size", ""),
                          placeholder="e.g., $5B market, 8% annual growth",
                          key="input_market_size",
-                         on_change=update_field("market_size"))
+                         on_change=update_field("market_size"),
+                         help="Provide the total addressable market (TAM), market value, and expected growth rate or trends in your industry")
         with col_size_btn:
             st.write("")
             if st.button("✨", key="ai_market_size", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -482,7 +494,8 @@ elif st.session_state.current_step == 3:
                         value=st.session_state.form_data.get("competitors", ""),
                         placeholder="List main competitors...", height=100,
                         key="input_competitors",
-                        on_change=update_field("competitors"))
+                        on_change=update_field("competitors"),
+                        help="List your main direct and indirect competitors, their product names, and their market position or strengths")
         with col_comp_btn:
             st.write("")
             if st.button("✨", key="ai_competitors", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -494,7 +507,8 @@ elif st.session_state.current_step == 3:
                         value=st.session_state.form_data.get("competitor_pricing", ""),
                         placeholder="How are competitors priced?", height=100,
                         key="input_competitor_pricing",
-                        on_change=update_field("competitor_pricing"))
+                        on_change=update_field("competitor_pricing"),
+                        help="Describe how competitors price their products, their positioning strategy (premium, mid-range, budget), and price ranges")
         with col_price_btn:
             st.write("")
             if st.button("✨", key="ai_competitor_pricing", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -507,7 +521,8 @@ elif st.session_state.current_step == 3:
                         value=st.session_state.form_data.get("competitor_distribution", ""),
                         placeholder="Where do they sell?", height=100,
                         key="input_competitor_distribution",
-                        on_change=update_field("competitor_distribution"))
+                        on_change=update_field("competitor_distribution"),
+                        help="Identify where and how competitors sell their products (online, retail stores, distributors, direct sales, marketplaces)")
         with col_dist_btn:
             st.write("")
             if st.button("✨", key="ai_competitor_distribution", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -519,7 +534,8 @@ elif st.session_state.current_step == 3:
                         value=st.session_state.form_data.get("market_benchmarks", ""),
                         placeholder="Industry standards...", height=100,
                         key="input_market_benchmarks",
-                        on_change=update_field("market_benchmarks"))
+                        on_change=update_field("market_benchmarks"),
+                        help="Describe industry standards, best practices, success metrics, typical conversion rates, or performance benchmarks in your market")
         with col_bench_btn:
             st.write("")
             if st.button("✨", key="ai_market_benchmarks", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -534,13 +550,15 @@ elif st.session_state.current_step == 4:
                      value=st.session_state.form_data.get("production_cost", ""),
                      placeholder="e.g., $12 per unit",
                      key="input_production_cost",
-                     on_change=update_field("production_cost"))
+                     on_change=update_field("production_cost"),
+                     help="Enter the total cost to produce or procure one unit, including materials, labor, and manufacturing expenses")
                 
         st.text_input("Desired Margin", 
                      value=st.session_state.form_data.get("desired_margin", ""),
                      placeholder="e.g., 40%",
                      key="input_desired_margin",
-                     on_change=update_field("desired_margin"))
+                     on_change=update_field("desired_margin"),
+                     help="Specify your target profit margin as a percentage (e.g., 40% means $10 profit on a $25 retail price with $15 cost)")
                 
     with col2:
         col_price, col_price_btn = st.columns([5, 1])
@@ -549,7 +567,8 @@ elif st.session_state.current_step == 4:
                          value=st.session_state.form_data.get("suggested_price", ""),
                          placeholder="e.g., $25-$30",
                          key="input_suggested_price",
-                         on_change=update_field("suggested_price"))
+                         on_change=update_field("suggested_price"),
+                         help="Enter your recommended retail price or price range based on costs, margins, and competitive positioning")
         with col_price_btn:
             st.write("")
             if st.button("✨", key="ai_suggested_price", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -561,7 +580,8 @@ elif st.session_state.current_step == 4:
                         value=st.session_state.form_data.get("price_elasticity", ""),
                         placeholder="Expected demand at different price points...",
                         key="input_price_elasticity",
-                        on_change=update_field("price_elasticity"))
+                        on_change=update_field("price_elasticity"),
+                        help="Describe how demand changes with price variations - will customers buy more at lower prices? Is demand sensitive to price changes?")
         with col_elas_btn:
             st.write("")
             if st.button("✨", key="ai_price_elasticity", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -578,7 +598,8 @@ elif st.session_state.current_step == 5:
             ["Social Media", "Influencer Marketing", "Paid Ads (Google/Meta)", "Email Marketing", 
              "Content Marketing", "Events", "PR/Media", "SEO", "Affiliate Marketing", "Partnerships"],
             default=default_channels if isinstance(default_channels, list) else ["Social Media", "Content Marketing"],
-            key="input_marketing_channels"
+            key="input_marketing_channels",
+            help="Select all marketing channels you plan to use to promote your product and reach your target audience"
         )
         st.session_state.form_data["marketing_channels"] = selected_channels
         
@@ -586,13 +607,15 @@ elif st.session_state.current_step == 5:
                     value=st.session_state.form_data.get("historical_campaigns", ""),
                     placeholder="Previous marketing efforts and their outcomes...",
                     key="input_historical_campaigns",
-                    on_change=update_field("historical_campaigns"))
+                    on_change=update_field("historical_campaigns"),
+                    help="Describe past marketing campaigns, their performance metrics, ROI, lessons learned, and what worked or didn't work")
     with col2:
         st.text_input("Marketing Budget", 
                      value=st.session_state.form_data.get("marketing_budget", ""),
                      placeholder="e.g., $50,000 for 6 months",
                      key="input_marketing_budget",
-                     on_change=update_field("marketing_budget"))
+                     on_change=update_field("marketing_budget"),
+                     help="Specify your total marketing budget and time period - this will be allocated across different channels and activities")
         
         col_tone, col_tone_btn = st.columns([5, 1])
         with col_tone:
@@ -600,7 +623,8 @@ elif st.session_state.current_step == 5:
                         value=st.session_state.form_data.get("tone_of_voice", ""),
                         placeholder="Brand voice and core messaging...",
                         key="input_tone_of_voice",
-                        on_change=update_field("tone_of_voice"))
+                        on_change=update_field("tone_of_voice"),
+                        help="Define your brand's communication style (professional, playful, inspirational) and the core message you want to convey")
         with col_tone_btn:
             st.write("")
             if st.button("✨", key="ai_tone_of_voice", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -617,7 +641,8 @@ elif st.session_state.current_step == 6:
             ["E-commerce (Own Website)", "Amazon/Marketplaces", "Retail Stores", "Wholesale", 
              "Direct Sales", "Distributors", "Subscription Model"],
             default=default_dist if isinstance(default_dist, list) else ["E-commerce (Own Website)"],
-            key="input_distribution_channels"
+            key="input_distribution_channels",
+            help="Select all channels through which customers can purchase your product - where will it be available?"
         )
         st.session_state.form_data["distribution_channels"] = selected_dist
         
@@ -627,7 +652,8 @@ elif st.session_state.current_step == 6:
                         value=st.session_state.form_data.get("logistics", ""),
                         placeholder="Shipping, warehousing, fulfillment...",
                         key="input_logistics",
-                        on_change=update_field("logistics"))
+                        on_change=update_field("logistics"),
+                        help="Describe shipping methods, warehousing needs, fulfillment capacity, delivery times, and any logistical constraints or partnerships")
         with col_log_btn:
             st.write("")
             if st.button("✨", key="ai_logistics", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -640,7 +666,8 @@ elif st.session_state.current_step == 6:
                         value=st.session_state.form_data.get("seasonality", ""),
                         placeholder="Seasonal factors, limited editions...",
                         key="input_seasonality",
-                        on_change=update_field("seasonality"))
+                        on_change=update_field("seasonality"),
+                        help="Describe any seasonal patterns, limited edition releases, special launches, or time-sensitive product availability")
         with col_seas_btn:
             st.write("")
             if st.button("✨", key="ai_seasonality", help="Fill in at least the Product Name first for more accurate AI suggestions!"):
@@ -660,7 +687,8 @@ elif st.session_state.current_step == 7:
                 saved_date = None
         selected_date = st.date_input("Desired Launch Date", 
                                      value=saved_date if saved_date else date_type.today(),
-                                     key="input_launch_date")
+                                     key="input_launch_date",
+                                     help="Choose your target product launch date - when you plan to make the product available to customers")
         st.session_state.form_data["launch_date"] = str(selected_date)
         
         col_seas_fac, col_seas_fac_btn = st.columns([5, 1])
@@ -669,7 +697,8 @@ elif st.session_state.current_step == 7:
                         value=st.session_state.form_data.get("seasonal_factors", ""),
                         placeholder="Holidays, events, trends...",
                         key="input_seasonal_factors",
-                        on_change=update_field("seasonal_factors"))
+                        on_change=update_field("seasonal_factors"),
+                        help="Identify holidays, events, cultural moments, or seasonal trends that align with your launch date and could boost visibility")
         with col_seas_fac_btn:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="btn_seasonal_factors", help="AI suggestion"):
@@ -681,7 +710,8 @@ elif st.session_state.current_step == 7:
                         value=st.session_state.form_data.get("campaign_timeline", ""),
                         placeholder="Pre-launch, launch, post-launch phases...",
                         key="input_campaign_timeline",
-                        on_change=update_field("campaign_timeline"))
+                        on_change=update_field("campaign_timeline"),
+                        help="Outline the promotional timeline with pre-launch (teasers, PR), launch day activities, and post-launch campaigns")
         with col_timeline_btn:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="btn_campaign_timeline", help="AI suggestion"):
@@ -698,7 +728,8 @@ elif st.session_state.current_step == 8:
                          value=st.session_state.form_data.get("sales_goals", ""),
                          placeholder="e.g., 10,000 units in first year",
                          key="input_sales_goals",
-                         on_change=update_field("sales_goals"))
+                         on_change=update_field("sales_goals"),
+                         help="Define your target sales volume - how many units do you aim to sell in a specific timeframe (monthly, quarterly, yearly)?")
         with col_sales_btn:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="btn_sales_goals", help="AI suggestion"):
@@ -710,7 +741,8 @@ elif st.session_state.current_step == 8:
                          value=st.session_state.form_data.get("market_share_goals", ""),
                          placeholder="e.g., 5% of market",
                          key="input_market_share_goals",
-                         on_change=update_field("market_share_goals"))
+                         on_change=update_field("market_share_goals"),
+                         help="Specify your target market share percentage - what portion of the total market do you aim to capture?")
         with col_market_btn:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="btn_market_share_goals", help="AI suggestion"):
@@ -722,7 +754,8 @@ elif st.session_state.current_step == 8:
                         value=st.session_state.form_data.get("brand_awareness_goals", ""),
                         placeholder="Social followers, website traffic...",
                         key="input_brand_awareness_goals",
-                        on_change=update_field("brand_awareness_goals"))
+                        on_change=update_field("brand_awareness_goals"),
+                        help="Set targets for brand visibility and engagement - social media followers, website visitors, engagement rates, brand recall")
         with col_brand_btn:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="btn_brand_awareness_goals", help="AI suggestion"):
@@ -734,7 +767,8 @@ elif st.session_state.current_step == 8:
                         value=st.session_state.form_data.get("success_metrics", ""),
                         placeholder="ROI, conversion rates, CAC, CLV...",
                         key="input_success_metrics",
-                        on_change=update_field("success_metrics"))
+                        on_change=update_field("success_metrics"),
+                        help="List key performance indicators to track - ROI, conversion rates, customer acquisition cost (CAC), customer lifetime value (CLV), etc.")
         with col_kpi_btn:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
             if st.button("✨", key="btn_success_metrics", help="AI suggestion"):
