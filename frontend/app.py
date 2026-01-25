@@ -299,8 +299,10 @@ def display_dict_content(data, level=0, section_key=""):
                 st.markdown(f"**{header}:** {value}")
             st.write("")
 
-st.title("📊 Marketing Plan Generator")
-st.caption("AI-powered marketing plan creation: Streamlit → FastAPI → MCP → Groq/Ollama → Postgres")
+# Only show main title on form/generate pages, not on info page
+if not st.session_state.get("show_architecture", False):
+    st.title("📊 Marketing Plan Generator")
+    st.caption("AI-powered marketing plan creation: Streamlit → FastAPI → MCP → Groq/Ollama → Postgres")
 
 # Initialize session state
 if "session_id" not in st.session_state:
