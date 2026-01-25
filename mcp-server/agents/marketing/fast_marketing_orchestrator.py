@@ -464,18 +464,52 @@ Format as JSON: {{
         }
     
     def _parse_json(self, text: str) -> Dict:
-        """Extract JSON from LLM response"""
+        """Extract JSON from LLM response with better error handling"""
         try:
-            # Try to find JSON block
+            if not text or not text.strip():
+                return {"error": "Empty response"}
+            
+            # Try direct JSON parse first
+            try:
+                return json.loads(text)
+            except:
+                pass
+            
+            # Find JSON block with better detection
             start = text.find('{')
             end = text.rfind('}') + 1
+            
             if start != -1 and end > start:
                 json_str = text[start:end]
-                return json.loads(json_str)
-            return {"raw": text[:500]}  # Return first 500 chars if no JSON
+                
+                # Clean up common issues
+                json_str = json_str.strip()
+                
+                # Try parsing
+                try:
+                    parsed = json.loads(json_str)
+                    return parsed
+                except json.JSONDecodeError as e:
+                    print(f"JSON decode error at position {e.pos}: {e.msg}")
+                    print(f"Problematic text snippet: {json_str[max(0, e.pos-50):e.pos+50]}")
+                    
+                    # Try to fix common issues
+                    # Remove trailing commas before closing braces/brackets
+                    import re
+                    json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+                    
+                    try:
+                        return json.loads(json_str)
+                    except:
+                        pass
+            
+            # If all else fails, return raw text but truncated
+            print(f"⚠️ Failed to parse JSON, returning raw text (length: {len(text)})")
+            return {"raw": text[:1000]}  # Return more text for debugging
+            
         except Exception as e:
-            print(f"JSON parse error: {e}")
-            return {"raw": text[:500] if text else "No response"}
+            print(f"❌ JSON parse error: {e}")
+            return {"error": str(e), "raw": text[:500] if text else "No response"}
     
     def _compile_plan(self, product_data: Dict, research: Dict, strategy: Dict) -> Dict:
         """Compile final 12-section plan"""
