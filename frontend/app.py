@@ -330,7 +330,7 @@ with st.sidebar:
     st.subheader("Navigation")
     
     # Info button
-    if st.button("ℹ️ Architecture Info", use_container_width=True):
+    if st.button("ℹ️ Project Info", use_container_width=True):
         st.session_state.show_architecture = True
         st.rerun()
     
@@ -487,7 +487,7 @@ if "show_architecture" not in st.session_state:
 
 # ARCHITECTURE INFO PAGE
 if st.session_state.show_architecture:
-    st.title("🏗️ System Architecture")
+    st.title("ℹ️ Project Info")
     
     # Back button
     if st.button("← Back to Application"):
