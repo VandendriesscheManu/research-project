@@ -512,7 +512,7 @@ if st.session_state.show_architecture:
         for path in possible_paths:
             if os.path.exists(path):
                 image = Image.open(path)
-                st.image(image, caption="Marketing Plan Generator Architecture", use_container_width=True)
+                st.image(image, caption="Marketing Plan Generator Architecture", use_column_width=True)
                 image_loaded = True
                 break
         
