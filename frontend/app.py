@@ -135,7 +135,18 @@ def display_dict_content(data, level=0, section_key=""):
         display_swot_table(data)
         return
     
+    # Special handling for raw/unparsed content
+    if 'raw' in data and len(data) == 1:
+        raw_text = data.get('raw', '')
+        if raw_text:
+            st.write(raw_text)
+        return
+    
     for key, value in data.items():
+        # Skip 'raw' key when displaying
+        if key == 'raw':
+            continue
+            
         header = key.replace('_', ' ').title()
         
         if isinstance(value, dict):
