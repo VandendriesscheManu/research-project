@@ -38,25 +38,146 @@ def get_api_base_url(custom_gist_url=None):
     # Final fallback
     return os.getenv("PUBLIC_API_BASE_URL", "http://localhost:8001")
 
+# Helper function to display SWOT as a table
+def display_swot_table(swot_data):
+    """Display SWOT analysis as a beautiful 2x2 table"""
+    st.markdown("### 📊 SWOT Analysis Matrix")
+    
+    # Extract SWOT data
+    strengths = swot_data.get('strengths', [])
+    weaknesses = swot_data.get('weaknesses', [])
+    opportunities = swot_data.get('opportunities', [])
+    threats = swot_data.get('threats', [])
+    
+    # Create 2x2 grid
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Strengths
+        st.markdown("#### 💪 Strengths (Internal)")
+        st.markdown('<div style="background-color: #d4edda; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
+        if isinstance(strengths, list):
+            for item in strengths:
+                if isinstance(item, dict):
+                    title = item.get('title', '')
+                    desc = item.get('description', '')
+                    st.markdown(f"**{title}**")
+                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
+                    st.markdown("")
+                else:
+                    st.markdown(f"• {item}")
+        else:
+            st.markdown(str(strengths))
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.write("")
+        
+        # Opportunities
+        st.markdown("#### 🌟 Opportunities (External)")
+        st.markdown('<div style="background-color: #d1ecf1; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
+        if isinstance(opportunities, list):
+            for item in opportunities:
+                if isinstance(item, dict):
+                    title = item.get('title', '')
+                    desc = item.get('description', '')
+                    st.markdown(f"**{title}**")
+                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
+                    st.markdown("")
+                else:
+                    st.markdown(f"• {item}")
+        else:
+            st.markdown(str(opportunities))
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col2:
+        # Weaknesses
+        st.markdown("#### ⚠️ Weaknesses (Internal)")
+        st.markdown('<div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
+        if isinstance(weaknesses, list):
+            for item in weaknesses:
+                if isinstance(item, dict):
+                    title = item.get('title', '')
+                    desc = item.get('description', '')
+                    st.markdown(f"**{title}**")
+                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
+                    st.markdown("")
+                else:
+                    st.markdown(f"• {item}")
+        else:
+            st.markdown(str(weaknesses))
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        st.write("")
+        
+        # Threats
+        st.markdown("#### 🚨 Threats (External)")
+        st.markdown('<div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
+        if isinstance(threats, list):
+            for item in threats:
+                if isinstance(item, dict):
+                    title = item.get('title', '')
+                    desc = item.get('description', '')
+                    st.markdown(f"**{title}**")
+                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
+                    st.markdown("")
+                else:
+                    st.markdown(f"• {item}")
+        else:
+            st.markdown(str(threats))
+        st.markdown('</div>', unsafe_allow_html=True)
+
 # Helper function to display nested dictionary content
-def display_dict_content(data, level=0):
-    """Recursively display dictionary content in a readable format"""
+def display_dict_content(data, level=0, section_key=""):
+    """Recursively display dictionary content in a beautiful, readable format"""
+    
+    # Special handling for SWOT section
+    if section_key == "4_swot_analysis" or ('strengths' in data and 'weaknesses' in data and 'opportunities' in data and 'threats' in data):
+        display_swot_table(data)
+        return
+    
     for key, value in data.items():
         header = key.replace('_', ' ').title()
         
         if isinstance(value, dict):
-            st.markdown(f"{'#' * (3 + level)} {header}")
-            display_dict_content(value, level + 1)
+            # Styled subheadings with icons
+            icon = "📌"
+            if "budget" in key.lower(): icon = "💰"
+            elif "goal" in key.lower() or "kpi" in key.lower(): icon = "🎯"
+            elif "competitor" in key.lower(): icon = "🏢"
+            elif "target" in key.lower() or "audience" in key.lower(): icon = "👥"
+            elif "channel" in key.lower(): icon = "📢"
+            elif "risk" in key.lower(): icon = "⚠️"
+            elif "timeline" in key.lower() or "launch" in key.lower(): icon = "📅"
+            
+            st.markdown(f"{'#' * (4 + level)} {icon} {header}")
+            display_dict_content(value, level + 1, section_key)
+            
         elif isinstance(value, list):
+            # Better list formatting with styled containers
             st.markdown(f"**{header}:**")
-            for item in value:
-                if isinstance(item, dict):
-                    st.markdown("---")
-                    display_dict_content(item, level + 1)
-                else:
-                    st.markdown(f"- {item}")
+            
+            # Check if list contains dicts (structured data)
+            has_dicts = any(isinstance(item, dict) for item in value)
+            
+            if has_dicts:
+                # Display as expandable cards for structured data
+                for idx, item in enumerate(value):
+                    if isinstance(item, dict):
+                        with st.expander(f"📄 {item.get('title', item.get('name', f'Item {idx+1}'))}", expanded=False):
+                            display_dict_content(item, level + 1, section_key)
+                    else:
+                        st.markdown(f"• {item}")
+            else:
+                # Simple bullet list for strings
+                for item in value:
+                    st.markdown(f"• {item}")
+            st.write("")
+            
         else:
-            st.markdown(f"**{header}:** {value}")
+            # Better text formatting
+            if value and str(value).strip():
+                st.markdown(f"**{header}:**")
+                st.markdown(f'<div style="background-color: #f8f9fa; padding: 10px; border-left: 3px solid #007bff; border-radius: 4px; margin-bottom: 10px;">{value}</div>', unsafe_allow_html=True)
             st.write("")
 
 st.title("📊 Marketing Plan Generator")
@@ -1106,12 +1227,21 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 for idx, (tab, section_key) in enumerate(zip(tabs, section_keys)):
                     with tab:
                         section = sections.get(section_key, {})
-                        st.markdown(f"### {section.get('title', 'Section')}")
                         
-                        # Display section content
+                        # Display section title with icon and description
+                        title = section.get('title', 'Section')
+                        description = section.get('description', '')
+                        
+                        st.markdown(f"## {title}")
+                        if description:
+                            st.info(f"ℹ️ {description}")
+                        
+                        st.markdown("---")
+                        
+                        # Display section content with section_key for special formatting
                         content = section.get('content', {})
                         if isinstance(content, dict):
-                            display_dict_content(content)
+                            display_dict_content(content, section_key=section_key)
                         else:
                             st.write(content)
                 
