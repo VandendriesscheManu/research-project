@@ -1,21 +1,10 @@
 """
 Marketing Agents Module
 
-This module contains specialized agents for creating comprehensive marketing plans:
-- Market Research Agent: Analyzes market, competitors, and target audience
-- Creative Strategy Agent: Develops marketing strategy and campaigns
-- Evaluator Agent: Assesses quality and provides feedback
-- Marketing Plan Orchestrator: Coordinates all agents to generate complete plans
+This module contains the fast marketing plan orchestrator for generating
+complete 12-section marketing plans quickly.
 """
 
-from .market_research_agent import MarketResearchAgent
-from .creative_strategy_agent import CreativeStrategyAgent
-from .evaluator_agent import EvaluatorAgent
-from .marketing_plan_orchestrator import MarketingPlanOrchestrator
+from .fast_marketing_orchestrator import fast_orchestrator
 
-__all__ = [
-    'MarketResearchAgent',
-    'CreativeStrategyAgent',
-    'EvaluatorAgent',
-    'MarketingPlanOrchestrator'
-]
+__all__ = ['fast_orchestrator']
