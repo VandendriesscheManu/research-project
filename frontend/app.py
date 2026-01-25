@@ -503,32 +503,29 @@ if st.session_state.show_architecture:
     een geïntegreerde marketingstrategie te ontwikkelen voor een gekozen product (zoals een biermerk of automerk)?
     """)
     
-    # Problem statement and solution
-    col1, col2, col3 = st.columns(3)
+    # Problem statement
+    st.markdown("**⚠️ Probleemstelling**")
+    st.markdown("""
+    - Marketingstrategieën vereisen afstemming tussen meerdere domeinen
+    - Vandaag gebeurt dit door een team met meerdere mensen
+    - Dit proces is tijdrovend en moeilijk schaalbaar
+    """)
     
-    with col1:
-        st.markdown("**⚠️ Probleemstelling**")
-        st.markdown("""
-        - Marketingstrategieën vereisen afstemming tussen meerdere domeinen
-        - Vandaag gebeurt dit door een team met meerdere mensen
-        - Dit proces is tijdrovend en moeilijk schaalbaar
-        """)
+    # Solution
+    st.markdown("**💡 Oplossing met Generative AI**")
+    st.markdown("""
+    - Generative AI wordt al gebruikt voor afzonderlijke marketingtaken
+    - Multi-agent systemen laten gespecialiseerde AI-agents samenwerken
+    - Een geïntegreerde, end-to-end aanpak ontbreekt nog
+    """)
     
-    with col2:
-        st.markdown("**💡 Oplossing met Generative AI**")
-        st.markdown("""
-        - Generative AI wordt al gebruikt voor afzonderlijke marketingtaken
-        - Multi-agent systemen laten gespecialiseerde AI-agents samenwerken
-        - Een geïntegreerde, end-to-end aanpak ontbreekt nog
-        """)
-    
-    with col3:
-        st.markdown("**🎯 Doel van het Onderzoek**")
-        st.markdown("""
-        - Onderzoeken of een multi-agent AI-systeem automatisch een volledige marketingstrategie kan genereren
-        - Vergelijking van AI-resultaten met menselijke strategieën
-        - Toepassing op een concreet product (bv. automerk)
-        """)
+    # Research goal
+    st.markdown("**🎯 Doel van het Onderzoek**")
+    st.markdown("""
+    - Onderzoeken of een multi-agent AI-systeem automatisch een volledige marketingstrategie kan genereren
+    - Vergelijking van AI-resultaten met menselijke strategieën
+    - Toepassing op een concreet product (bv. automerk)
+    """)
     
     st.divider()
     
