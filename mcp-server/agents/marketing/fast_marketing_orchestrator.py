@@ -532,6 +532,7 @@ Format as JSON: {{
             if self.evaluator is None:
                 from .evaluator_agent import evaluator_agent
                 self.evaluator = evaluator_agent
+                print("✅ Evaluator agent loaded successfully")
             
             # Prepare data for evaluator
             research_data = {
@@ -547,6 +548,7 @@ Format as JSON: {{
                 "budget": strategy.get('budget_monitoring', {}).get('budget', {})
             }
             
+            print("📊 Running full evaluation...")
             # Run full evaluation
             evaluation = self.evaluator.evaluate_full_plan(
                 product_data=product_data,
@@ -554,14 +556,17 @@ Format as JSON: {{
                 strategy_data=strategy_data
             )
             
+            print(f"✅ Evaluation completed! Score: {evaluation.get('overall_score', 'N/A')}")
             return evaluation
             
         except Exception as e:
-            print(f"⚠️ Evaluation failed: {e}. Using fallback.")
+            print(f"⚠️ Evaluation failed: {e}")
+            import traceback
+            traceback.print_exc()
             # Fallback to basic evaluation
             return {
                 "overall_score": 7.5,
-                "note": "Evaluation agent unavailable - using fallback",
+                "note": f"Evaluation agent error: {str(e)}",
                 "criterion_scores": {
                     "consistency": 7.5,
                     "quality": 7.5,

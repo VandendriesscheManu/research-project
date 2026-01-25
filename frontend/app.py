@@ -1410,6 +1410,10 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 st.divider()
                 evaluation = plan_content.get('evaluation', {})
                 
+                # DEBUG: Show raw evaluation data
+                with st.expander("🔍 DEBUG: Raw Evaluation Data"):
+                    st.json(evaluation)
+                
                 st.subheader("📊 Evaluation Summary")
                 
                 # Criterion scores
@@ -1432,10 +1436,11 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                     for weakness in evaluation.get('weaknesses', [])[:5]:
                         st.markdown(f"- {weakness}")
                 
-                # Recommendations
-                if evaluation.get('recommendations'):
+                # Recommendations (check both 'recommendations' and 'final_recommendations')
+                recommendations = evaluation.get('final_recommendations') or evaluation.get('recommendations', [])
+                if recommendations:
                     st.markdown("**💡 Recommendations:**")
-                    for rec in evaluation.get('recommendations', []):
+                    for rec in recommendations:
                         st.info(rec)
                 
                 # Display all 12 sections
