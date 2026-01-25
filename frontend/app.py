@@ -174,7 +174,6 @@ def generate_pdf(product_data, plan_data):
     story.append(Paragraph(f"{metadata.get('product_name', 'Product')}", styles['Heading2']))
     story.append(Spacer(1, 0.3*inch))
     story.append(Paragraph(f"Generated: {metadata.get('generated_at', '')[:10]}", styles['Normal']))
-    story.append(Paragraph(f"Quality Score: {metadata.get('quality_score', 0):.1f}/10", styles['Normal']))
     story.append(PageBreak())
     
     # Product Information Section
@@ -182,22 +181,31 @@ def generate_pdf(product_data, plan_data):
     story.append(Spacer(1, 0.1*inch))
     
     product_fields = [
-        ("Product Name", product_data.get('product_name', 'N/A')),
-        ("Category", product_data.get('product_category', 'N/A')),
-        ("Features", product_data.get('product_features', 'N/A')),
-        ("USP", product_data.get('product_usp', 'N/A')),
-        ("Branding", product_data.get('product_branding', 'N/A')),
-        ("Primary Target", product_data.get('target_primary', 'N/A')),
-        ("Demographics", product_data.get('target_demographics', 'N/A')),
-        ("Production Cost", product_data.get('production_cost', 'N/A')),
-        ("Suggested Price", product_data.get('suggested_price', 'N/A')),
-        ("Marketing Budget", product_data.get('marketing_budget', 'N/A')),
+        ("Product Name", product_data.get('product_name', '')),
+        ("Category", product_data.get('product_category', '')),
+        ("Features", product_data.get('product_features', '')),
+        ("USP", product_data.get('product_usp', '')),
+        ("Branding", product_data.get('product_branding', '')),
+        ("Product Variants", product_data.get('product_variants', '')),
+        ("Primary Target", product_data.get('target_primary', '')),
+        ("Secondary Target", product_data.get('target_secondary', '')),
+        ("Demographics", product_data.get('target_demographics', '')),
+        ("Psychographics", product_data.get('target_psychographics', '')),
+        ("Competitors", product_data.get('competitors', '')),
+        ("Market Positioning", product_data.get('market_positioning', '')),
+        ("Production Cost", product_data.get('production_cost', '')),
+        ("Suggested Price", product_data.get('suggested_price', '')),
+        ("Distribution Channels", product_data.get('distribution_channels', '')),
+        ("Marketing Budget", product_data.get('marketing_budget', '')),
+        ("Launch Timeline", product_data.get('launch_timeline', '')),
+        ("Key Challenges", product_data.get('key_challenges', '')),
+        ("Success Metrics", product_data.get('success_metrics', '')),
     ]
     
     for label, value in product_fields:
-        if value and value != 'N/A':
+        if value and value.strip():
             story.append(Paragraph(f"<b>{label}:</b> {value}", styles['Normal']))
-            story.append(Spacer(1, 0.05*inch))
+            story.append(Spacer(1, 0.08*inch))
     
     story.append(PageBreak())
     
@@ -230,30 +238,46 @@ def generate_pdf(product_data, plan_data):
     return buffer
 
 
-def _add_content_to_pdf(content, story, styles, subheading_style):
+def _add_content_to_pdf(content, story, styles, subheading_style, indent_level=0):
     """Recursively add content to PDF story"""
+    indent = "    " * indent_level
+    
     if isinstance(content, dict):
         for key, value in content.items():
+            # Skip raw content and error fields
             if key in ['raw_content', 'error', 'raw']:
                 continue
             
             header = key.replace('_', ' ').title()
             
             if isinstance(value, dict):
-                story.append(Paragraph(f"<b>{header}</b>", subheading_style))
-                _add_content_to_pdf(value, story, styles, subheading_style)
-            elif isinstance(value, list):
-                story.append(Paragraph(f"<b>{header}:</b>", subheading_style))
+                story.append(Paragraph(f"{indent}<b>{header}</b>", subheading_style))
+                story.append(Spacer(1, 0.05*inch))
+                _add_content_to_pdf(value, story, styles, subheading_style, indent_level + 1)
+            elif isinstance(value, list) and value:
+                story.append(Paragraph(f"{indent}<b>{header}:</b>", subheading_style))
                 for item in value:
                     if isinstance(item, dict):
                         for k, v in item.items():
-                            story.append(Paragraph(f"• <b>{k.replace('_', ' ').title()}:</b> {v}", styles['Normal']))
+                            story.append(Paragraph(f"{indent}  • <b>{k.replace('_', ' ').title()}:</b> {v}", styles['Normal']))
                     else:
-                        story.append(Paragraph(f"• {item}", styles['Normal']))
+                        story.append(Paragraph(f"{indent}  • {str(item)}", styles['Normal']))
+                story.append(Spacer(1, 0.05*inch))
+            elif value:  # Only add if value exists
+                # Clean up value text
+                value_str = str(value).strip()
+                if value_str:
+                    story.append(Paragraph(f"{indent}<b>{header}:</b> {value_str}", styles['Normal']))
+                    story.append(Spacer(1, 0.05*inch))
+    elif isinstance(content, list):
+        for item in content:
+            if isinstance(item, dict):
+                _add_content_to_pdf(item, story, styles, subheading_style, indent_level)
             else:
-                story.append(Paragraph(f"<b>{header}:</b> {value}", styles['Normal']))
-    elif isinstance(content, str):
-        story.append(Paragraph(content, styles['Normal']))
+                story.append(Paragraph(f"{indent}• {str(item)}", styles['Normal']))
+    elif isinstance(content, str) and content.strip():
+        story.append(Paragraph(f"{indent}{content}", styles['Normal']))
+        story.append(Spacer(1, 0.05*inch))
 
 
 # Helper function to display nested dictionary content
