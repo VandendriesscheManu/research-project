@@ -1502,43 +1502,18 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 st.divider()
                 st.subheader("💾 Export Options")
                 
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    # Download as JSON
-                    import json
-                    json_str = json.dumps(plan_content, indent=2, ensure_ascii=False)
+                # Download as PDF
+                try:
+                    pdf_buffer = generate_pdf(st.session_state.form_data, plan_data)
                     st.download_button(
-                        label="📥 Download as JSON",
-                        data=json_str,
-                        file_name=f"marketing_plan_{metadata.get('product_name', 'plan')}.json",
-                        mime="application/json",
+                        label="📄 Download as PDF",
+                        data=pdf_buffer,
+                        file_name=f"marketing_plan_{metadata.get('product_name', 'plan')}.pdf",
+                        mime="application/pdf",
                         use_container_width=True
                     )
-                
-                with col2:
-                    # Download full data
-                    full_json = json.dumps(plan_data, indent=2, ensure_ascii=False)
-                    st.download_button(
-                        label="📥 Download Full Data",
-                        data=full_json,
-                        file_name=f"marketing_plan_full_{metadata.get('product_name', 'plan')}.json",
-                        mime="application/json",
-                        use_container_width=True
-                    )
-                
-                with col3:
-                    # Download as PDF
-                    try:
-                        pdf_buffer = generate_pdf(st.session_state.form_data, plan_data)
-                        st.download_button(
-                            label="📄 Download as PDF",
-                            data=pdf_buffer,
-                            file_name=f"marketing_plan_{metadata.get('product_name', 'plan')}.pdf",
-                            mime="application/pdf",
-                            use_container_width=True
-                        )
-                    except Exception as e:
-                        st.error(f"PDF generation error: {str(e)}")
+                except Exception as e:
+                    st.error(f"PDF generation error: {str(e)}")
                 
             elif response.status_code == 404:
                 st.warning("📭 No marketing plan found yet. Click 'Generate Complete Marketing Plan' above.")
