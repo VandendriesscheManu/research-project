@@ -528,7 +528,7 @@ if st.session_state.show_architecture:
     """)
     
     # Research findings
-    st.markdown("**📚 Uit mijn onderzoek wijst**")
+    st.subheader("📚 Uit mijn onderzoek wijst")
     st.markdown("""
     **Geïntegreerde marketingstrategie**
     - Cruciaal voor succesvolle productlancering
