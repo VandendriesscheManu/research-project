@@ -203,9 +203,12 @@ def generate_pdf(product_data, plan_data):
     ]
     
     for label, value in product_fields:
-        if value and value.strip():
-            story.append(Paragraph(f"<b>{label}:</b> {value}", styles['Normal']))
-            story.append(Spacer(1, 0.08*inch))
+        if value:
+            # Convert to string and check if it has content
+            value_str = str(value) if not isinstance(value, str) else value
+            if value_str.strip():
+                story.append(Paragraph(f"<b>{label}:</b> {value_str}", styles['Normal']))
+                story.append(Spacer(1, 0.08*inch))
     
     story.append(PageBreak())
     
