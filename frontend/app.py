@@ -164,6 +164,22 @@ def display_dict_content(data, level=0, section_key=""):
                 st.info("Content generation is still in progress. The section structure is being prepared but detailed content may be incomplete. Please regenerate the plan for complete results.")
         return
     
+    # Also handle raw_content key (new format)
+    if 'raw_content' in data:
+        raw_text = data.get('raw_content', '')
+        if raw_text:
+            st.warning("⚠️ JSON parsing failed - showing raw content:")
+            st.text(raw_text[:2000])  # Show first 2000 chars
+        return
+    
+    # Handle error responses
+    if 'error' in data and len(data) <= 2:
+        st.error(f"❌ Generation error: {data.get('error')}")
+        if 'raw_content' in data:
+            with st.expander("📄 Raw response"):
+                st.text(data.get('raw_content', '')[:1000])
+        return
+    
     for key, value in data.items():
         # Skip 'raw' key when displaying
         if key == 'raw':

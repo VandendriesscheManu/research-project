@@ -294,7 +294,7 @@ Format as JSON: {{
     "physical_evidence": {{"store_design": "...", "website_ux": "...", "testimonials": "..."}}
 }}"""
         
-        marketing_mix = self._generate(mix_prompt, 800)
+        marketing_mix = self._generate(mix_prompt, 1200)  # Increased from 800 to 1200 for more complete 7Ps
         
         print("  → Generating action plan...")
         action_prompt = f"""Create detailed ACTION PLAN for {product_name} launch. Respond in ENGLISH.
@@ -490,26 +490,34 @@ Format as JSON: {{
                     parsed = json.loads(json_str)
                     return parsed
                 except json.JSONDecodeError as e:
-                    print(f"JSON decode error at position {e.pos}: {e.msg}")
-                    print(f"Problematic text snippet: {json_str[max(0, e.pos-50):e.pos+50]}")
+                    print(f"⚠️ JSON decode error at position {e.pos}: {e.msg}")
                     
                     # Try to fix common issues
-                    # Remove trailing commas before closing braces/brackets
                     import re
+                    # Remove trailing commas before closing braces/brackets
                     json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+                    # Fix escaped quotes that might break JSON
+                    json_str = re.sub(r'\\(?!")', r'', json_str)
+                    # Remove control characters
+                    json_str = ''.join(char for char in json_str if ord(char) >= 32 or char in '\n\r\t')
                     
                     try:
-                        return json.loads(json_str)
-                    except:
-                        pass
+                        parsed = json.loads(json_str)
+                        print(f"✅ JSON fixed after cleanup")
+                        return parsed
+                    except Exception as e2:
+                        print(f"❌ Still failed after cleanup: {e2}")
+                        # Show more context for debugging
+                        print(f"First 500 chars: {json_str[:500]}")
+                        print(f"Last 200 chars: {json_str[-200:]}")
             
-            # If all else fails, return raw text but truncated
+            # If all else fails, return raw text in proper format for frontend
             print(f"⚠️ Failed to parse JSON, returning raw text (length: {len(text)})")
-            return {"raw": text[:1000]}  # Return more text for debugging
+            return {"raw_content": text}  # Frontend can handle this
             
         except Exception as e:
             print(f"❌ JSON parse error: {e}")
-            return {"error": str(e), "raw": text[:500] if text else "No response"}
+            return {"error": str(e), "raw_content": text[:1000] if text else "No response"}
     
     def _compile_plan(self, product_data: Dict, research: Dict, strategy: Dict) -> Dict:
         """Compile final 12-section plan"""
