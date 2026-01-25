@@ -496,6 +496,15 @@ if st.session_state.show_architecture:
     
     st.divider()
     
+    # Research question
+    st.subheader("🔬 Onderzoeksvraag")
+    st.info("""
+    Hoe kan Generative AI, ondersteund door een multi-agent systeem, ingezet worden om automatisch 
+    een geïntegreerde marketingstrategie te ontwikkelen voor een gekozen product (zoals een biermerk of automerk)?
+    """)
+    
+    st.divider()
+    
     # Try to load and display the architecture image
     try:
         from PIL import Image
