@@ -183,12 +183,11 @@ def display_dict_content(data, level=0, section_key=""):
             st.write("")
             
         else:
-            # Better text formatting
+            # Simple text display without boxes
             if value and str(value).strip() and str(value) != 'None':
                 st.markdown(f"**{header}:**")
-                # Clean up the value
                 value_str = str(value).strip()
-                st.markdown(f'<div style="background-color: #f8f9fa; padding: 12px 15px; border-left: 3px solid #007bff; border-radius: 4px; margin-bottom: 10px;">{value_str}</div>', unsafe_allow_html=True)
+                st.write(value_str)
             st.write("")
 
 st.title("📊 Marketing Plan Generator")
