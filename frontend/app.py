@@ -1308,18 +1308,6 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                     else:
                         st.info(f"💡 **Overall Quality: {overall_score:.1f}/10**")
                 
-                # Criterion scores - only show if they exist and are valid
-                criterion_scores = evaluation.get('criterion_scores', {})
-                if criterion_scores and len(criterion_scores) > 0:
-                    # Verify these are actual scores (not default/fallback values)
-                    valid_scores = {k: v for k, v in criterion_scores.items() if isinstance(v, (int, float)) and v > 0}
-                    if valid_scores:
-                        st.markdown("#### 📋 Detailed Scores")
-                        cols = st.columns(3)
-                        for idx, (criterion, score) in enumerate(valid_scores.items()):
-                            with cols[idx % 3]:
-                                st.metric(criterion.replace('_', ' ').title(), f"{score:.1f}/10")
-                
                 st.divider()
                 
                 # Strengths and Weaknesses
