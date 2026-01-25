@@ -987,56 +987,58 @@ with col3:
         if st.button("Next ➡️", use_container_width=True, type="primary"):
             st.session_state.current_step += 1
             st.rerun()
+    else:
+        # Submit button on final step (stays in col3)
+        save_clicked = st.button("💾 Save Product Information", use_container_width=True, type="primary")
 
-# Submit button on final step (full width)
-if st.session_state.current_step == total_steps:
-    if st.button("💾 Save Product Information", use_container_width=True, type="primary"):
-        # Get product_name from session state
-        product_name = st.session_state.form_data.get("product_name", "")
+# Handle save action (full width for messages)
+if st.session_state.current_step == total_steps and save_clicked:
+    # Get product_name from session state
+    product_name = st.session_state.form_data.get("product_name", "")
+    
+    # Only check for product name (minimum requirement)
+    if not product_name:
+        st.error("❌ Please provide at least a Product Name (Step 1)")
+    else:
+        # Prepare data for API (now using form_data from session state)
+        brief_data = st.session_state.form_data.copy()
+        brief_data["session_id"] = st.session_state.session_id
         
-        # Only check for product name (minimum requirement)
-        if not product_name:
-            st.error("❌ Please provide at least a Product Name (Step 1)")
-        else:
-            # Prepare data for API (now using form_data from session state)
-            brief_data = st.session_state.form_data.copy()
-            brief_data["session_id"] = st.session_state.session_id
+        try:
+            # Call API to save product brief
+            headers = {}
+            if st.session_state.api_key:
+                headers["X-API-KEY"] = st.session_state.api_key
             
-            try:
-                # Call API to save product brief
-                headers = {}
-                if st.session_state.api_key:
-                    headers["X-API-KEY"] = st.session_state.api_key
+            with st.spinner("💾 Saving your product information..."):
+                response = requests.post(
+                    f"{API_BASE_URL}/product-brief",
+                    json=brief_data,
+                    headers=headers,
+                    timeout=30
+                )
                 
-                with st.spinner("💾 Saving your product information..."):
-                    response = requests.post(
-                        f"{API_BASE_URL}/product-brief",
-                        json=brief_data,
-                        headers=headers,
-                        timeout=30
-                    )
+                if response.status_code == 401:
+                    st.error("❌ Unauthorized - check your API key")
+                else:
+                    response.raise_for_status()
+                    result = response.json()
                     
-                    if response.status_code == 401:
-                        st.error("❌ Unauthorized - check your API key")
-                    else:
-                        response.raise_for_status()
-                        result = response.json()
-                        
-                        # Save brief_id in session state
-                        st.session_state.brief_id = result.get('brief_id')
-                        st.session_state.brief_saved = True
-                        
-                        st.success(f"✅ Product information saved successfully! (Brief ID: {st.session_state.brief_id})")
-                        st.info(f"📝 Product information saved successfully. Ready to generate marketing plan.")
-                        
-                        # Show collected data
-                        with st.expander("📋 Saved Product Information"):
-                            st.json(brief_data)
-            
-            except requests.exceptions.RequestException as e:
-                st.error(f"❌ Failed to save product information: {str(e)}")
-            except Exception as e:
-                st.error(f"❌ An error occurred: {str(e)}")
+                    # Save brief_id in session state
+                    st.session_state.brief_id = result.get('brief_id')
+                    st.session_state.brief_saved = True
+                    
+                    st.success(f"✅ Product information saved successfully! (Brief ID: {st.session_state.brief_id})")
+                    st.info(f"📝 Product information saved successfully. Ready to generate marketing plan.")
+                    
+                    # Show collected data
+                    with st.expander("📋 Saved Product Information"):
+                        st.json(brief_data)
+        
+        except requests.exceptions.RequestException as e:
+            st.error(f"❌ Failed to save product information: {str(e)}")
+        except Exception as e:
+            st.error(f"❌ An error occurred: {str(e)}")
 
 # Marketing Plan Generation Section
 if st.session_state.get("brief_saved") and st.session_state.brief_id:
