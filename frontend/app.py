@@ -40,7 +40,7 @@ def get_api_base_url(custom_gist_url=None):
 
 # Helper function to display SWOT as a table
 def display_swot_table(swot_data):
-    """Display SWOT analysis as a beautiful 2x2 table"""
+    """Display SWOT analysis as a simple 2x2 layout"""
     st.markdown("### 📊 SWOT Analysis Matrix")
     
     # Extract SWOT data
@@ -55,76 +55,76 @@ def display_swot_table(swot_data):
     with col1:
         # Strengths
         st.markdown("#### 💪 Strengths (Internal)")
-        st.markdown('<div style="background-color: #d4edda; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
         if isinstance(strengths, list):
             for item in strengths:
                 if isinstance(item, dict):
                     title = item.get('title', '')
                     desc = item.get('description', '')
-                    st.markdown(f"**{title}**")
-                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
-                    st.markdown("")
+                    if title:
+                        st.markdown(f"**{title}**")
+                    if desc:
+                        st.write(desc)
+                    st.write("")
                 else:
                     st.markdown(f"• {item}")
         else:
-            st.markdown(str(strengths))
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.write(str(strengths))
         
-        st.write("")
+        st.divider()
         
         # Opportunities
         st.markdown("#### 🌟 Opportunities (External)")
-        st.markdown('<div style="background-color: #d1ecf1; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
         if isinstance(opportunities, list):
             for item in opportunities:
                 if isinstance(item, dict):
                     title = item.get('title', '')
                     desc = item.get('description', '')
-                    st.markdown(f"**{title}**")
-                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
-                    st.markdown("")
+                    if title:
+                        st.markdown(f"**{title}**")
+                    if desc:
+                        st.write(desc)
+                    st.write("")
                 else:
                     st.markdown(f"• {item}")
         else:
-            st.markdown(str(opportunities))
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.write(str(opportunities))
     
     with col2:
         # Weaknesses
         st.markdown("#### ⚠️ Weaknesses (Internal)")
-        st.markdown('<div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
         if isinstance(weaknesses, list):
             for item in weaknesses:
                 if isinstance(item, dict):
                     title = item.get('title', '')
                     desc = item.get('description', '')
-                    st.markdown(f"**{title}**")
-                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
-                    st.markdown("")
+                    if title:
+                        st.markdown(f"**{title}**")
+                    if desc:
+                        st.write(desc)
+                    st.write("")
                 else:
                     st.markdown(f"• {item}")
         else:
-            st.markdown(str(weaknesses))
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.write(str(weaknesses))
         
-        st.write("")
+        st.divider()
         
         # Threats
         st.markdown("#### 🚨 Threats (External)")
-        st.markdown('<div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; min-height: 200px;">', unsafe_allow_html=True)
         if isinstance(threats, list):
             for item in threats:
                 if isinstance(item, dict):
                     title = item.get('title', '')
                     desc = item.get('description', '')
-                    st.markdown(f"**{title}**")
-                    st.markdown(f"<small>{desc}</small>", unsafe_allow_html=True)
-                    st.markdown("")
+                    if title:
+                        st.markdown(f"**{title}**")
+                    if desc:
+                        st.write(desc)
+                    st.write("")
                 else:
                     st.markdown(f"• {item}")
         else:
-            st.markdown(str(threats))
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.write(str(threats))
 
 # Helper function to display nested dictionary content
 def display_dict_content(data, level=0, section_key=""):
