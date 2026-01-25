@@ -408,16 +408,8 @@ with st.sidebar:
     Use the AI Field Assistant to get suggestions for any field based on your existing information.
     """)
 
-# Full Marketing Plan Form
-st.subheader("📝 Product Information Form")
-st.write("Fill in product details to generate a comprehensive marketing plan.")
-
-# Demo Mode Toggle
-col_demo1, col_demo2 = st.columns([2, 3])
-with col_demo1:
-    demo_mode = st.toggle("🎬 Fill Demo Data", value=False, help="Auto-fill all fields with demo data for presentation")
-    
-    if demo_mode and not st.session_state.get("demo_loaded", False):
+# Initialize field values in session state
+if "form_data" not in st.session_state:
         st.session_state.form_data = {
             "product_name": "EcoBottle Pro",
             "product_category": "Reusable Smart Water Bottles",
@@ -455,24 +447,6 @@ with col_demo1:
             "external_resources": "• 3D product rendering agency\n• PR firm for launch\n• 5 micro-influencers (10k-50k followers)\n• Meta Ads consultant",
             "company_context": "Sustainability-first startup founded in 2025. Mission: reduce single-use plastic. Previous crowdfunding success: $120k raised on Kickstarter for prototype.",
             "product_development_stage": "Manufacturing complete. First batch ready Feb 2026. All certifications obtained (FDA, EU compliance).",
-            "regulatory_compliance": "FDA food-safe certified, BPA-free, EU REACH compliant, Prop 65 compliant, FCC certified (wireless charging)",
-            "sustainability_certificates": "Certified B Corporation (pending), Carbon Neutral certified, 1% for the Planet member, Ocean Cleanup partner"
-        }
-        st.session_state.demo_loaded = True
-        st.success("✅ Demo data loaded! Scroll through all 8 steps to see the filled fields.")
-        st.balloons()
-        st.rerun()
-    elif not demo_mode and st.session_state.get("demo_loaded", False):
-        st.session_state.form_data = {}
-        st.session_state.demo_loaded = False
-        st.info("Demo data cleared!")
-        st.rerun()
-
-with col_demo2:
-    st.caption("👆 Use demo mode for quick presentations without typing")
-
-# Initialize field values in session state
-if "form_data" not in st.session_state:
     st.session_state.form_data = {}
 
 # Initialize current step
@@ -593,6 +567,60 @@ if st.session_state.show_architecture:
 
 # FORM PAGE
 elif st.session_state.page_state == "form":
+    # Full Marketing Plan Form
+    st.subheader("📝 Product Information Form")
+    st.write("Fill in product details to generate a comprehensive marketing plan.")
+
+    # Demo Mode Toggle
+    col_demo1, col_demo2 = st.columns([2, 3])
+    with col_demo1:
+        demo_mode = st.toggle("🎬 Fill Demo Data", value=False, help="Auto-fill all fields with demo data for presentation")
+        
+        if demo_mode and not st.session_state.get("demo_loaded", False):
+            st.session_state.form_data = {
+                "product_name": "EcoBottle Pro",
+                "product_category": "Reusable Smart Water Bottles",
+                "product_features": "• Temperature display (hot/cold indicator)\n• Double-wall vacuum insulation (keeps drinks cold 24h, hot 12h)\n• Leak-proof lid with one-hand operation\n• BPA-free stainless steel\n• Built-in UV-C sterilization\n• Wireless charging base\n• Eco-friendly materials (recycled steel)",
+                "product_usp": "• Only smart bottle with UV-C self-cleaning\n• 100% sustainable materials\n• Temperature monitoring via app\n• Lifetime warranty\n• Carbon-neutral production",
+                "product_branding": "Modern minimalist design with matte finish. Available in 5 nature-inspired colors (Ocean Blue, Forest Green, Stone Gray, Sunset Orange, Arctic White). Premium feel with subtle logo embossing. Recyclable packaging with zero plastic.",
+                "product_variants": "• Standard (500ml) - $29.99\n• Large (750ml) - $34.99\n• XL (1L) - $39.99\n• Limited Edition Artist Series - $49.99",
+                "target_primary": "Environmentally conscious millennials and Gen Z (25-40 years) who value sustainability, health, and technology",
+                "target_secondary": "Fitness enthusiasts, office workers, outdoor adventurers",
+                "target_demographics": "Age: 25-40, Income: $40k-$80k, Urban dwellers, College-educated, Tech-savvy, 60% female / 40% male",
+                "target_psychographics": "Values: sustainability, health, innovation. Lifestyle: active, eco-conscious, early tech adopters. Interests: fitness, hiking, yoga, zero-waste living. Online shoppers who research before buying.",
+                "target_personas": "Sarah (32): Marketing manager, gym-goer, reduces plastic waste\nDavid (28): Software developer, hiker, loves gadgets\nEmily (35): Yoga instructor, sustainability advocate",
+                "target_problems": "• Plastic pollution concerns\n• Forgetting to clean water bottles\n• Drinks not staying at desired temperature\n• Low-quality bottles leaking or breaking\n• Lack of temperature awareness",
+                "market_size": "$8.4 billion global reusable bottle market, growing 6.2% annually. Sustainability-focused segment growing at 12% CAGR.",
+                "competitors": "• Hydro Flask ($30-45) - market leader, no smart features\n• LARQ ($95-150) - UV cleaning, premium pricing\n• S'well ($25-45) - fashion-focused, no tech\n• Yeti ($30-50) - durability-focused\n• CamelBak ($20-35) - sports-focused",
+                "competitor_pricing": "Premium segment: $25-$50. Smart bottles: $50-$150. Our positioning: affordable smart bottle at $30-$40.",
+                "competitor_distribution": "REI, Amazon, Target, Whole Foods, direct-to-consumer websites, specialty outdoor stores",
+                "market_benchmarks": "Average customer acquisition cost: $15-25. Conversion rate: 2-4%. Email open rate: 18-22%. Social media engagement: 3-5%.",
+                "suggested_price": "$34.99 (Standard model). Premium pricing justified by smart features while remaining accessible.",
+                "marketing_channels": "Instagram & TikTok (60%), Influencer partnerships (20%), Google Ads (10%), Email marketing (10%). Focus on sustainability influencers and fitness communities.",
+                "distribution_channels": "Direct-to-consumer (website - 70%), Amazon (20%), Select REI stores (10%). Later: Whole Foods, Target sustainability sections.",
+                "tone_of_voice": "Friendly, optimistic, authentic. 'Join the movement to end single-use plastic.' Emphasize community over sales. Visual-first content with user-generated photos.",
+                "budget_constraints": "$150k total first year: $80k digital marketing, $40k influencer partnerships, $20k content creation, $10k market research.",
+                "time_constraints": "Launch in Q2 2024. Pre-launch campaign: 8 weeks. Soft launch: 2 weeks. Full launch: ongoing.",
+                "sales_goals": "Year 1: 25,000 units ($875k revenue). Month 1: 1,000 units. Month 6: 3,000 units/month. Break-even at 15,000 units.",
+                "market_share_goals": "Capture 0.5% of US reusable bottle market in Year 1. Become top-3 smart bottle brand by Year 2.",
+                "brand_awareness_goals": "Build brand recognition among 20% of target audience (eco-conscious millennials) within 6 months. Achieve 10k Instagram followers by Month 3.",
+                "kpis": "Website conversion rate (target: 3%), Email list growth (target: 5k subscribers in 6 months), Social media engagement rate (target: 5%), Customer acquisition cost (target: <$20), Net Promoter Score (target: >50)",
+                "regulatory_compliance": "FDA food-safe certified, BPA-free, EU REACH compliant, Prop 65 compliant, FCC certified (wireless charging)",
+                "sustainability_certificates": "Certified B Corporation (pending), Carbon Neutral certified, 1% for the Planet member, Ocean Cleanup partner"
+            }
+            st.session_state.demo_loaded = True
+            st.success("✅ Demo data loaded! Scroll through all 8 steps to see the filled fields.")
+            st.balloons()
+            st.rerun()
+        elif not demo_mode and st.session_state.get("demo_loaded", False):
+            st.session_state.form_data = {}
+            st.session_state.demo_loaded = False
+            st.info("Demo data cleared!")
+            st.rerun()
+
+    with col_demo2:
+        st.caption("👆 Use demo mode for quick presentations without typing")
+
     # Progress indicator
     total_steps = 8
     st.progress(st.session_state.current_step / total_steps)
