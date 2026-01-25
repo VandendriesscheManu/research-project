@@ -101,7 +101,7 @@ Format as JSON: {{
     "market_opportunities": ["opportunity1", "opportunity2"]
 }}"""
         
-        market_result = self._generate(market_prompt, 600)
+        market_result = self._generate(market_prompt, 700)
         
         print("  → Generating comprehensive SWOT analysis...")
         swot_prompt = f"""Create a detailed SWOT ANALYSIS for {product_name}. Respond in ENGLISH.
@@ -142,7 +142,7 @@ Format as JSON: {{
     ]
 }}"""
         
-        swot_result = self._generate(swot_prompt, 500)
+        swot_result = self._generate(swot_prompt, 600)
         
         return {
             "market_intelligence": self._parse_json(market_result),
@@ -211,7 +211,7 @@ Format as JSON: {{
     "brand_personality": {{"tone": "...", "values": ["..."], "characteristics": "..."}}
 }}"""
         
-        positioning = self._generate(positioning_prompt, 600)
+        positioning = self._generate(positioning_prompt, 700)
         
         print("  → Generating marketing goals & KPIs...")
         goals_prompt = f"""Create MARKETING GOALS & KPIs for {product_name}. Respond in ENGLISH.
@@ -249,7 +249,7 @@ Format as JSON: {{
     ]
 }}"""
         
-        goals = self._generate(goals_prompt, 500)
+        goals = self._generate(goals_prompt, 600)
         
         print("  → Generating marketing mix (7Ps)...")
         mix_prompt = f"""Create comprehensive MARKETING MIX (7Ps Strategy) for {product_name}. Respond in ENGLISH.
@@ -294,7 +294,7 @@ Format as JSON: {{
     "physical_evidence": {{"store_design": "...", "website_ux": "...", "testimonials": "..."}}
 }}"""
         
-        marketing_mix = self._generate(mix_prompt, 800)
+        marketing_mix = self._generate(mix_prompt, 900)
         
         print("  → Generating action plan...")
         action_prompt = f"""Create detailed ACTION PLAN for {product_name} launch. Respond in ENGLISH.
@@ -330,7 +330,7 @@ Format as JSON: {{
     }}
 }}"""
         
-        action_plan = self._generate(action_prompt, 600)
+        action_plan = self._generate(action_prompt, 700)
         
         print("  → Generating budget & monitoring plan...")
         budget_prompt = f"""Create BUDGET & MONITORING plan for {product_name}. Respond in ENGLISH.
@@ -389,7 +389,7 @@ Format as JSON: {{
     }}
 }}"""
         
-        budget_monitoring = self._generate(budget_prompt, 800)
+        budget_monitoring = self._generate(budget_prompt, 900)
         
         print("  → Generating risks & launch strategy...")
         risks_launch_prompt = f"""Create RISK MANAGEMENT & LAUNCH STRATEGY for {product_name}. Respond in ENGLISH.
@@ -452,7 +452,7 @@ Format as JSON: {{
     }}
 }}"""
         
-        risks_launch = self._generate(risks_launch_prompt, 900)
+        risks_launch = self._generate(risks_launch_prompt, 1000)
         
         return {
             "positioning": self._parse_json(positioning),
