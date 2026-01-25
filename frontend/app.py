@@ -179,8 +179,42 @@ def display_dict_content(data, level=0, section_key=""):
                 # Display structured data in expanders
                 for idx, item in enumerate(value):
                     if isinstance(item, dict):
-                        # Get title from common fields
-                        item_title = item.get('title', item.get('name', item.get('goal', f'Item {idx+1}')))
+                        # Get title from common fields with smart fallbacks
+                        item_title = None
+                        
+                        # Try common title fields
+                        if 'title' in item:
+                            item_title = item.get('title')
+                        elif 'name' in item:
+                            item_title = item.get('name')
+                        elif 'goal' in item:
+                            item_title = item.get('goal')
+                        elif 'activity' in item:
+                            item_title = item.get('activity')
+                        elif 'risk' in item:
+                            item_title = item.get('risk')
+                        elif 'phase' in item:
+                            item_title = item.get('phase')
+                        elif 'type' in item:
+                            item_title = item.get('type')
+                        
+                        # Smart fallback based on parent key
+                        if not item_title:
+                            if 'risk' in key.lower():
+                                item_title = f"Risk {idx+1}"
+                            elif 'cost' in key.lower() or 'budget' in key.lower():
+                                item_title = f"Cost Item {idx+1}"
+                            elif 'phase' in key.lower() or 'launch' in key.lower():
+                                item_title = f"Phase {idx+1}"
+                            elif 'milestone' in key.lower():
+                                item_title = f"Milestone {idx+1}"
+                            elif 'goal' in key.lower() or 'kpi' in key.lower():
+                                item_title = f"Goal {idx+1}"
+                            elif 'activity' in key.lower() or 'action' in key.lower():
+                                item_title = f"Activity {idx+1}"
+                            else:
+                                item_title = f"Item {idx+1}"
+                        
                         with st.expander(f"📄 {item_title}", expanded=False):
                             # Display dict items as simple key-value pairs
                             for k, v in item.items():
