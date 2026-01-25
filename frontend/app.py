@@ -156,6 +156,12 @@ def display_dict_content(data, level=0, section_key=""):
             # Better list formatting with styled containers
             st.markdown(f"**{header}:**")
             
+            # Check if list is empty
+            if not value:
+                st.caption("_No data available_")
+                st.write("")
+                return
+            
             # Check if list contains dicts (structured data)
             has_dicts = any(isinstance(item, dict) for item in value)
             
@@ -163,21 +169,26 @@ def display_dict_content(data, level=0, section_key=""):
                 # Display as expandable cards for structured data
                 for idx, item in enumerate(value):
                     if isinstance(item, dict):
-                        with st.expander(f"📄 {item.get('title', item.get('name', f'Item {idx+1}'))}", expanded=False):
+                        # Get title from common fields
+                        item_title = item.get('title', item.get('name', item.get('goal', f'Item {idx+1}')))
+                        with st.expander(f"📄 {item_title}", expanded=False):
                             display_dict_content(item, level + 1, section_key)
                     else:
                         st.markdown(f"• {item}")
             else:
                 # Simple bullet list for strings
                 for item in value:
-                    st.markdown(f"• {item}")
+                    if item:  # Only show non-empty items
+                        st.markdown(f"• {item}")
             st.write("")
             
         else:
             # Better text formatting
-            if value and str(value).strip():
+            if value and str(value).strip() and str(value) != 'None':
                 st.markdown(f"**{header}:**")
-                st.markdown(f'<div style="background-color: #f8f9fa; padding: 10px; border-left: 3px solid #007bff; border-radius: 4px; margin-bottom: 10px;">{value}</div>', unsafe_allow_html=True)
+                # Clean up the value
+                value_str = str(value).strip()
+                st.markdown(f'<div style="background-color: #f8f9fa; padding: 12px 15px; border-left: 3px solid #007bff; border-radius: 4px; margin-bottom: 10px;">{value_str}</div>', unsafe_allow_html=True)
             st.write("")
 
 st.title("📊 Marketing Plan Generator")
@@ -986,17 +997,8 @@ if st.session_state.get("brief_saved") and st.session_state.brief_id:
         """)
     
     with col2:
-        auto_iterate = st.checkbox(
-            "🔄 Auto-Improve",
-            value=False,
-            help="Automatically improve the plan if quality score is below 8.0 (takes longer)"
-        )
-        
         st.markdown("**Estimated Time:**")
-        if auto_iterate:
-            st.write("⏱️ 5-10 minutes")
-        else:
-            st.write("⏱️ 2-5 minutes")
+        st.write("⏱️ 2-5 minutes")
     
     # Generate button
     if st.button("🎯 Generate Complete Marketing Plan", use_container_width=True, type="primary"):
@@ -1021,8 +1023,7 @@ if st.session_state.get("brief_saved") and st.session_state.brief_id:
                     response = requests.post(
                         f"{API_BASE_URL}/generate-marketing-plan",
                         json={
-                            "brief_id": brief_id_str,
-                            "auto_iterate": auto_iterate
+                            "brief_id": brief_id_str
                         },
                         headers=headers,
                         timeout=30  # Short timeout since we get immediate response
@@ -1081,7 +1082,7 @@ if st.session_state.get("brief_saved") and st.session_state.brief_id:
                                         elif score >= 7.0:
                                             st.info(f"👍 **Quality Score: {score:.1f}/10** - Good!")
                                         else:
-                                            st.warning(f"💡 **Quality Score: {score:.1f}/10** - Consider enabling Auto-Improve")
+                                            st.info(f"💡 **Quality Score: {score:.1f}/10**")
                                         
                                         st.info(f"📋 Plan ID: {plan_data.get('id')} | Brief ID: {st.session_state.brief_id}")
                                         break
