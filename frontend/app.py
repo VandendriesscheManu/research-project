@@ -1479,22 +1479,24 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
                 for idx, (tab, section_key) in enumerate(zip(tabs, section_keys)):
                     with tab:
-                        if section_key in sections:
-                            section = sections[section_key]
-                            
-                            # Section description
-                            description = section.get('description', '')
-                            if description:
-                                st.info(f"ℹ️ {description}")
-                            
-                            st.markdown("---")
-                            
-                            # Display section content
-                            content = section.get('content', {})
-                            if isinstance(content, dict):
-                                display_dict_content(content, section_key=section_key)
-                            else:
-                                st.write(content)
+                        section = sections.get(section_key, {})
+                        
+                        # Display section title with icon and description
+                        title = section.get('title', 'Section')
+                        description = section.get('description', '')
+                        
+                        st.markdown(f"## {title}")
+                        if description:
+                            st.info(f"ℹ️ {description}")
+                        
+                        st.markdown("---")
+                        
+                        # Display section content with section_key for special formatting
+                        content = section.get('content', {})
+                        if isinstance(content, dict):
+                            display_dict_content(content, section_key=section_key)
+                        else:
+                            st.write(content)
                 
                 # Download options
                 st.divider()
