@@ -327,6 +327,14 @@ if "gist_url" not in st.session_state:
 API_BASE_URL = get_api_base_url(st.session_state.gist_url)
 
 with st.sidebar:
+    st.subheader("Navigation")
+    
+    # Info button
+    if st.button("ℹ️ Architecture Info", use_container_width=True):
+        st.session_state.show_architecture = True
+        st.rerun()
+    
+    st.divider()
     st.subheader("Settings")
     
     # Display URL with /docs for user reference
@@ -473,8 +481,90 @@ if "current_step" not in st.session_state:
 if "page_state" not in st.session_state:
     st.session_state.page_state = "form"
 
+# Initialize architecture view state
+if "show_architecture" not in st.session_state:
+    st.session_state.show_architecture = False
+
+# ARCHITECTURE INFO PAGE
+if st.session_state.show_architecture:
+    st.title("🏗️ System Architecture")
+    
+    # Back button
+    if st.button("← Back to Application"):
+        st.session_state.show_architecture = False
+        st.rerun()
+    
+    st.divider()
+    
+    # Try to load and display the architecture image
+    try:
+        from PIL import Image
+        import os
+        
+        # Check multiple possible locations
+        possible_paths = [
+            "MV_Architecture.png",
+            "../MV_Architecture.png",
+            os.path.join(os.path.dirname(__file__), "../MV_Architecture.png"),
+        ]
+        
+        image_loaded = False
+        for path in possible_paths:
+            if os.path.exists(path):
+                image = Image.open(path)
+                st.image(image, caption="Marketing Plan Generator Architecture", use_container_width=True)
+                image_loaded = True
+                break
+        
+        if not image_loaded:
+            st.error("Architecture diagram not found. Please ensure MV_Architecture.png is in the project root.")
+            st.info("Expected location: project_root/MV_Architecture.png")
+    
+    except ImportError:
+        st.error("PIL (Pillow) library not installed. Add 'pillow' to requirements.txt")
+    except Exception as e:
+        st.error(f"Error loading architecture image: {e}")
+    
+    st.divider()
+    
+    st.subheader("📊 System Components")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        **Frontend**
+        - Streamlit Cloud (free hosting)
+        - 8-step guided form
+        - AI field assistants
+        - Real-time plan display
+        
+        **Backend Services**
+        - FastAPI REST API
+        - PostgreSQL database
+        - MCP server with LLM client
+        - URL extractor service
+        """)
+    
+    with col2:
+        st.markdown("""
+        **External Services**
+        - Groq API (LLM inference)
+        - Cloudflare Tunnel (free)
+        - GitHub Gist (URL sync)
+        
+        **Key Features**
+        - 12-section marketing plans
+        - AI quality evaluation
+        - Cost: ~$0.0008 per plan
+        - Generation time: 30-60s
+        """)
+    
+    st.divider()
+    st.caption("For more details, see README.md and INSTALLATION.md")
+
 # FORM PAGE
-if st.session_state.page_state == "form":
+elif st.session_state.page_state == "form":
     # Progress indicator
     total_steps = 8
     st.progress(st.session_state.current_step / total_steps)
