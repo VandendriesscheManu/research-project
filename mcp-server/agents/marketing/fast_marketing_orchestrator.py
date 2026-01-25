@@ -273,25 +273,25 @@ Format as JSON: {{
 - Channels: {', '.join(marketing_channels) if marketing_channels else 'Various channels'}
 - Tone: {tone_of_voice}
 
-Based on this context, create the 7Ps strategy (concise):
+Based on this context, create the 7Ps strategy:
 
-**Product**: Features, quality, design, branding
-**Price**: Strategy, positioning, tactics
-**Place**: Distribution channels, logistics
-**Promotion**: Advertising, content, social media
-**People**: Staff, customer service
-**Process**: Customer journey, purchase flow
-**Physical Evidence**: Store/website design
+**Product**: Features, quality, design, branding, packaging, variants
+**Price**: Pricing strategy, positioning, discounts, payment terms
+**Place**: Distribution channels, locations, logistics, online/offline presence
+**Promotion**: Advertising, PR, content marketing, social media, influencer partnerships
+**People**: Staff, customer service, brand ambassadors
+**Process**: Customer journey, purchase process, delivery, after-sales
+**Physical Evidence**: Store design, website UX, packaging, testimonials
 
-Concise (400-500 words). ONLY valid JSON, no extra text.
+Detailed (500-600 words).
 Format as JSON: {{
-    "product": {{"features": "...", "quality": "...", "design": "..."}},
-    "price": {{"strategy": "...", "positioning": "..."}},
-    "place": {{"channels": ["..."], "distribution": "..."}},
-    "promotion": {{"advertising": "...", "content": "..."}},
-    "people": {{"staff": "...", "customer_service": "..."}},
-    "process": {{"customer_journey": "..."}},
-    "physical_evidence": {{"store_design": "...", "website_ux": "..."}}
+    "product": {{"features": "...", "quality": "...", "design": "...", "branding": "...", "packaging": "..."}},
+    "price": {{"strategy": "...", "positioning": "...", "tactics": "..."}},
+    "place": {{"channels": ["..."], "distribution": "...", "logistics": "..."}},
+    "promotion": {{"advertising": "...", "pr": "...", "content": "...", "social_media": "...", "influencers": "..."}},
+    "people": {{"staff": "...", "customer_service": "...", "ambassadors": "..."}},
+    "process": {{"customer_journey": "...", "purchase_flow": "...", "delivery": "..."}},
+    "physical_evidence": {{"store_design": "...", "website_ux": "...", "testimonials": "..."}}
 }}"""
         
         marketing_mix = self._generate(mix_prompt, 800)
