@@ -3,13 +3,6 @@ import uuid
 import requests
 import streamlit as st
 from pathlib import Path
-from io import BytesIO
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
-from reportlab.lib import colors
 
 # MUST be the first Streamlit command
 st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
@@ -133,166 +126,6 @@ def display_swot_table(swot_data):
         else:
             st.write(str(threats))
 
-
-def generate_pdf(product_data, plan_data):
-    """Generate a formatted PDF with product data and marketing plan"""
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.75*inch, bottomMargin=0.75*inch)
-    story = []
-    styles = getSampleStyleSheet()
-    
-    # Extract metadata
-    metadata = plan_data.get('metadata', {})
-    product_name = metadata.get('product_name', product_data.get('product_name', 'Marketing Plan'))
-    generated_at = metadata.get('generated_at', '')
-    
-    # Custom styles
-    title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=24,
-        textColor=colors.HexColor('#1f77b4'),
-        spaceAfter=30,
-        alignment=TA_CENTER
-    )
-    
-    heading_style = ParagraphStyle(
-        'CustomHeading',
-        parent=styles['Heading2'],
-        fontSize=16,
-        textColor=colors.HexColor('#1f77b4'),
-        spaceAfter=12,
-        spaceBefore=12
-    )
-    
-    subheading_style = ParagraphStyle(
-        'CustomSubHeading',
-        parent=styles['Heading3'],
-        fontSize=12,
-        textColor=colors.HexColor('#555555'),
-        spaceAfter=6
-    )
-    
-    # Title page
-    story.append(Paragraph("Marketing Plan", title_style))
-    story.append(Paragraph(product_name, styles['Heading2']))
-    story.append(Spacer(1, 0.3*inch))
-    if generated_at:
-        story.append(Paragraph(f"Generated: {generated_at[:10]}", styles['Normal']))
-    story.append(PageBreak())
-    
-    # Product Information Section
-    story.append(Paragraph("Product Information", heading_style))
-    story.append(Spacer(1, 0.1*inch))
-    
-    product_fields = [
-        ("Product Name", product_data.get('product_name', '')),
-        ("Category", product_data.get('product_category', '')),
-        ("Features", product_data.get('product_features', '')),
-        ("USP", product_data.get('product_usp', '')),
-        ("Branding", product_data.get('product_branding', '')),
-        ("Product Variants", product_data.get('product_variants', '')),
-        ("Primary Target", product_data.get('target_primary', '')),
-        ("Secondary Target", product_data.get('target_secondary', '')),
-        ("Demographics", product_data.get('target_demographics', '')),
-        ("Psychographics", product_data.get('target_psychographics', '')),
-        ("Competitors", product_data.get('competitors', '')),
-        ("Market Positioning", product_data.get('market_positioning', '')),
-        ("Production Cost", product_data.get('production_cost', '')),
-        ("Suggested Price", product_data.get('suggested_price', '')),
-        ("Distribution Channels", product_data.get('distribution_channels', '')),
-        ("Marketing Budget", product_data.get('marketing_budget', '')),
-        ("Launch Timeline", product_data.get('launch_timeline', '')),
-        ("Key Challenges", product_data.get('key_challenges', '')),
-        ("Success Metrics", product_data.get('success_metrics', '')),
-    ]
-    
-    for label, value in product_fields:
-        if value:
-            # Convert to string and check if it has content
-            value_str = str(value) if not isinstance(value, str) else value
-            if value_str.strip():
-                story.append(Paragraph(f"<b>{label}:</b> {value_str}", styles['Normal']))
-                story.append(Spacer(1, 0.08*inch))
-    
-    story.append(PageBreak())
-    
-    # Marketing Plan Sections
-    sections = plan_data.get('sections', {})
-    
-    if not sections:
-        story.append(Paragraph("No marketing plan sections available", styles['Normal']))
-    else:
-        for section_key in sorted(sections.keys()):
-            section = sections[section_key]
-            title = section.get('title', 'Section')
-            description = section.get('description', '')
-            content = section.get('content', {})
-            
-            # Section title
-            story.append(Paragraph(title, heading_style))
-            if description:
-                story.append(Paragraph(f"<i>{description}</i>", styles['Italic']))
-            story.append(Spacer(1, 0.1*inch))
-            
-            # Section content
-            _add_content_to_pdf(content, story, styles, subheading_style)
-            story.append(Spacer(1, 0.2*inch))
-            
-            # Page break after every 3 sections
-            section_num = int(section_key.split('_')[0])
-            if section_num % 3 == 0 and section_num < 12:
-                story.append(PageBreak())
-    
-    # Build PDF
-    doc.build(story)
-    buffer.seek(0)
-    return buffer
-
-
-def _add_content_to_pdf(content, story, styles, subheading_style, indent_level=0):
-    """Recursively add content to PDF story"""
-    indent = "    " * indent_level
-    
-    if isinstance(content, dict):
-        for key, value in content.items():
-            # Skip raw content and error fields
-            if key in ['raw_content', 'error', 'raw']:
-                continue
-            
-            header = key.replace('_', ' ').title()
-            
-            if isinstance(value, dict):
-                story.append(Paragraph(f"{indent}<b>{header}</b>", subheading_style))
-                story.append(Spacer(1, 0.05*inch))
-                _add_content_to_pdf(value, story, styles, subheading_style, indent_level + 1)
-            elif isinstance(value, list) and value:
-                story.append(Paragraph(f"{indent}<b>{header}:</b>", subheading_style))
-                for item in value:
-                    if isinstance(item, dict):
-                        for k, v in item.items():
-                            story.append(Paragraph(f"{indent}  • <b>{k.replace('_', ' ').title()}:</b> {str(v)}", styles['Normal']))
-                    else:
-                        story.append(Paragraph(f"{indent}  • {str(item)}", styles['Normal']))
-                story.append(Spacer(1, 0.05*inch))
-            elif value is not None:  # Only add if value exists
-                # Convert to string and clean up
-                value_str = str(value).strip() if isinstance(value, str) else str(value)
-                if value_str:
-                    story.append(Paragraph(f"{indent}<b>{header}:</b> {value_str}", styles['Normal']))
-                    story.append(Spacer(1, 0.05*inch))
-    elif isinstance(content, list):
-        for item in content:
-            if isinstance(item, dict):
-                _add_content_to_pdf(item, story, styles, subheading_style, indent_level)
-            else:
-                story.append(Paragraph(f"{indent}• {str(item)}", styles['Normal']))
-    elif content is not None:
-        # Convert to string if needed
-        content_str = str(content).strip() if isinstance(content, str) else str(content)
-        if content_str:
-            story.append(Paragraph(f"{indent}{content_str}", styles['Normal']))
-            story.append(Spacer(1, 0.05*inch))
 
 
 # Helper function to display nested dictionary content
@@ -1547,25 +1380,6 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                             display_dict_content(content, section_key=section_key)
                         else:
                             st.write(content)
-                
-                # Download options
-                st.divider()
-                st.subheader("💾 Export Options")
-                
-                # Download as PDF
-                try:
-                    # Use the product brief data from session state
-                    product_data = st.session_state.get('product_brief_data', {})
-                    pdf_buffer = generate_pdf(product_data, plan_data)
-                    st.download_button(
-                        label="📄 Download as PDF",
-                        data=pdf_buffer,
-                        file_name=f"marketing_plan_{metadata.get('product_name', 'plan')}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-                except Exception as e:
-                    st.error(f"PDF generation error: {str(e)}")
                 
             elif response.status_code == 404:
                 st.warning("📭 No marketing plan found yet. Click 'Generate Complete Marketing Plan' above.")
