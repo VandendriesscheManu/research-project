@@ -1,31 +1,51 @@
 # 📊 Marketing Plan Generator
 
-AI-powered marketing plan creation using Streamlit, FastAPI, MCP (Model Context Protocol), and LLMs (Groq/Ollama).
+AI-powered complete 12-section marketing plan creation using Streamlit, FastAPI, MCP (Model Context Protocol), and LLMs (Groq).
 
 ## 🏗️ Architecture
 
 ```
-Streamlit Frontend (Cloud) → Cloudflare Tunnel → FastAPI Backend → MCP Server → LLM (Groq/Ollama) → PostgreSQL
+Streamlit Frontend (Cloud) → Cloudflare Tunnel → FastAPI Backend → MCP Server → LLM (Groq) → PostgreSQL
                                     ↓
                              GitHub Gist (URL sync)
 ```
 
 ## ✨ Features
 
-- **Dual Mode Interface**: Chat mode for testing and Full mode for comprehensive marketing plans
-- **AI-Powered Agents**: Marketing and Field Assistant agents using LLM
+- **Complete 12-Section Marketing Plans**: Executive summary, mission/vision, market analysis, SWOT, positioning, goals, marketing mix (7Ps), action plan, budget, monitoring, risks, and launch strategy
+- **AI Field Assistant**: Inline suggestions for every input field with ✨ button
+- **AI-Powered Evaluation**: Automated quality assessment with scores for consistency, quality, originality, feasibility, completeness, and ethics
+- **8-Step Guided Form**: Comprehensive product information collection
+- **Demo Mode**: Toggle to fill form with example data (EcoBottle Pro)
 - **Dynamic URL Management**: Automatic Cloudflare tunnel URL updates via GitHub Gist
-- **Multiple LLM Support**: Groq (fast, free) and Ollama (local) with automatic fallback
-- **Persistent Storage**: PostgreSQL database for conversation history and product briefs
+- **Fast LLM**: Groq API with llama-3.1-8b-instant for speed and cost efficiency
+- **Persistent Storage**: PostgreSQL database for product briefs and marketing plans
 - **Docker Compose**: Complete containerized setup
 
 ## 📋 Prerequisites
 
-- [Docker](https://www.docker.com/get-started) and Docker Compose
-- [Git](https://git-scm.com/downloads)
-- [GitHub Account](https://github.com) (for Gist URL management)
-- [Groq API Key](https://console.groq.com) (free tier available)
-- (Optional) [Ollama](https://ollama.ai) installed locally for offline LLM
+### Required Software
+
+1. **Docker Desktop** (Windows/Mac/Linux)
+   - Download: https://www.docker.com/products/docker-desktop/
+   - Install Docker Desktop and ensure it's running
+   - Verify installation: `docker --version` and `docker-compose --version`
+
+2. **Git** (for cloning the repository)
+   - Download: https://git-scm.com/downloads
+   - Verify installation: `git --version`
+
+3. **GitHub Account** (for Gist URL management)
+   - Sign up: https://github.com/join
+
+4. **Groq API Key** (free, required for LLM)
+   - Sign up: https://console.groq.com
+   - Get your API key (pay-as-you-go recommended for unlimited rate limits)
+
+### Optional
+
+- **Text Editor** (VS Code recommended)
+- **Python 3.11+** (only if running frontend locally outside Docker)
 
 ## 🚀 Quick Setup
 
