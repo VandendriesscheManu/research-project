@@ -128,7 +128,7 @@ def display_swot_table(swot_data):
 
 # Helper function to display nested dictionary content
 def display_dict_content(data, level=0, section_key=""):
-    """Recursively display dictionary content in a beautiful, readable format"""
+    """Recursively display dictionary content in a simple, readable format"""
     
     # Special handling for SWOT section
     if section_key == "4_swot_analysis" or ('strengths' in data and 'weaknesses' in data and 'opportunities' in data and 'threats' in data):
@@ -153,41 +153,42 @@ def display_dict_content(data, level=0, section_key=""):
             display_dict_content(value, level + 1, section_key)
             
         elif isinstance(value, list):
-            # Better list formatting with styled containers
             st.markdown(f"**{header}:**")
             
             # Check if list is empty
             if not value:
                 st.caption("_No data available_")
                 st.write("")
-                return
+                continue
             
             # Check if list contains dicts (structured data)
             has_dicts = any(isinstance(item, dict) for item in value)
             
             if has_dicts:
-                # Display as expandable cards for structured data
+                # Display structured data in expanders
                 for idx, item in enumerate(value):
                     if isinstance(item, dict):
                         # Get title from common fields
                         item_title = item.get('title', item.get('name', item.get('goal', f'Item {idx+1}')))
                         with st.expander(f"📄 {item_title}", expanded=False):
-                            display_dict_content(item, level + 1, section_key)
+                            # Display dict items as simple key-value pairs
+                            for k, v in item.items():
+                                if v and str(v).strip() and str(v) != 'None':
+                                    k_display = k.replace('_', ' ').title()
+                                    st.markdown(f"**{k_display}:** {v}")
                     else:
                         st.markdown(f"• {item}")
             else:
                 # Simple bullet list for strings
                 for item in value:
-                    if item:  # Only show non-empty items
+                    if item and str(item).strip():
                         st.markdown(f"• {item}")
             st.write("")
             
         else:
-            # Simple text display without boxes
+            # Simple text display
             if value and str(value).strip() and str(value) != 'None':
-                st.markdown(f"**{header}:**")
-                value_str = str(value).strip()
-                st.write(value_str)
+                st.markdown(f"**{header}:** {value}")
             st.write("")
 
 st.title("📊 Marketing Plan Generator")
