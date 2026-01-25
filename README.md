@@ -700,57 +700,6 @@ research-project/
 └── README.md                 # This file
 ```
 
-### Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Streamlit Cloud                             │
-│                     (Frontend UI)                               │
-└───────────────┬─────────────────────────────────────────────────┘
-                │ HTTPS
-                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Cloudflare Tunnel (Free)                           │
-│              https://random.trycloudflare.com                   │
-└───────────────┬─────────────────────────────────────────────────┘
-                │ HTTP
-                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   FastAPI Backend                               │
-│              (Docker Container - Port 8000)                     │
-│   • Product brief storage                                       │
-│   • Marketing plan compilation                                  │
-│   • PostgreSQL communication                                    │
-│   • MCP client integration                                      │
-└──────┬──────────────────┬─────────────────────────────────┬────┘
-       │                  │                                 │
-       │ Local            │ JSON-RPC                       │ SQL
-       ▼                  ▼                                 ▼
-┌──────────────┐   ┌──────────────────┐          ┌─────────────────┐
-│ Orchestrator │   │   MCP Server     │          │   PostgreSQL    │
-│    Agent     │   │  (Port 5000)     │          │   (Port 5432)   │
-│              │   │                  │          │                 │
-│ • Research   │   │ • LLM Client     │          │ • Product data  │
-│ • Strategy   │   │ • Groq API       │          │ • Marketing     │
-│ • Generation │   │ • Prompt mgmt    │          │   plans         │
-│ • Evaluation │   │                  │          │                 │
-└──────────────┘   └──────┬───────────┘          └─────────────────┘
-                          │ HTTPS
-                          ▼
-                   ┌──────────────────┐
-                   │    Groq API      │
-                   │                  │
-                   │ • llama-3.1-8b   │
-                   │ • llama-3.3-70b  │
-                   └──────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                   URL Sync (Background)                         │
-│                                                                 │
-│   Cloudflare → url-extractor → GitHub Gist → Streamlit         │
-│      logs         Docker           API        secrets.toml      │
-└─────────────────────────────────────────────────────────────────┘
-```
 
 ### Development Workflow
 
