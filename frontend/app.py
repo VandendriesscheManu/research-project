@@ -1436,6 +1436,8 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
             product_brief_data = {}
             if brief_response.status_code == 200:
                 product_brief_data = brief_response.json().get('brief_data', {})
+                # Store in session state for PDF generation
+                st.session_state['product_brief_data'] = product_brief_data
             
             if response.status_code == 200:
                 plan_data = response.json()
@@ -1552,8 +1554,9 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
                 # Download as PDF
                 try:
-                    # Use the product brief data we fetched earlier
-                    pdf_buffer = generate_pdf(product_brief_data, plan_data)
+                    # Use the product brief data from session state
+                    product_data = st.session_state.get('product_brief_data', {})
+                    pdf_buffer = generate_pdf(product_data, plan_data)
                     st.download_button(
                         label="📄 Download as PDF",
                         data=pdf_buffer,
