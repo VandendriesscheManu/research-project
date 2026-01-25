@@ -527,6 +527,34 @@ if st.session_state.show_architecture:
     - Toepassing op een concreet product (bv. automerk)
     """)
     
+    # Research findings
+    st.markdown("**📚 Uit mijn onderzoek wijst**")
+    st.markdown("""
+    **Geïntegreerde marketingstrategie**
+    - Cruciaal voor succesvolle productlancering
+    
+    **Huidige marketing-AI**
+    - Losse, geïsoleerde taken
+    - Geen end-to-end strategie
+    
+    **Multi-agent & rolgebaseerde architecturen**
+    - Beter dan single-agent
+    - Geschikt voor complexe, multidisciplinaire taken
+    
+    **AI-gegenereerde marketingcontent**
+    - Gelijkwaardig of beter dan mens
+    - Vooral sneller & kostenefficiënter
+    
+    **Evaluatieprobleem**
+    - Vergelijking met menselijke strategieën nodig
+    - Weinig gratis, kwalitatieve marketingplannen
+    - Evaluatie nu technisch (dmv de evaluatie agent)
+    
+    **Ethiek & Responsible AI**
+    - Net zoals bij chatbots
+    - Privacy, bias, transparantie, vertrouwen
+    """)
+    
     st.divider()
     
     # Try to load and display the architecture image
