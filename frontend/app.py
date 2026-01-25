@@ -1419,11 +1419,23 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
         headers = {"X-API-KEY": st.session_state.api_key}
         
         with st.spinner("📥 Loading your marketing plan..."):
+            # Get the marketing plan
             response = requests.get(
                 f"{API_BASE_URL}/marketing-plan/{st.session_state.brief_id}",
                 headers=headers,
                 timeout=30
             )
+            
+            # Get the product brief data
+            brief_response = requests.get(
+                f"{API_BASE_URL}/product-brief/{st.session_state.brief_id}",
+                headers=headers,
+                timeout=30
+            )
+            
+            product_brief_data = {}
+            if brief_response.status_code == 200:
+                product_brief_data = brief_response.json().get('brief_data', {})
             
             if response.status_code == 200:
                 plan_data = response.json()
@@ -1540,11 +1552,8 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
                 # Download as PDF
                 try:
-                    # Debug: Check what data we have
-                    if not st.session_state.form_data:
-                        st.warning("⚠️ No product form data available. Using plan metadata only.")
-                    
-                    pdf_buffer = generate_pdf(st.session_state.form_data, plan_data)
+                    # Use the product brief data we fetched earlier
+                    pdf_buffer = generate_pdf(product_brief_data, plan_data)
                     st.download_button(
                         label="📄 Download as PDF",
                         data=pdf_buffer,
