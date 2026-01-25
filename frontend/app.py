@@ -141,6 +141,11 @@ def generate_pdf(product_data, plan_data):
     story = []
     styles = getSampleStyleSheet()
     
+    # Extract metadata
+    metadata = plan_data.get('metadata', {})
+    product_name = metadata.get('product_name', product_data.get('product_name', 'Marketing Plan'))
+    generated_at = metadata.get('generated_at', '')
+    
     # Custom styles
     title_style = ParagraphStyle(
         'CustomTitle',
@@ -169,11 +174,11 @@ def generate_pdf(product_data, plan_data):
     )
     
     # Title page
-    metadata = plan_data.get('metadata', {})
     story.append(Paragraph("Marketing Plan", title_style))
-    story.append(Paragraph(f"{metadata.get('product_name', 'Product')}", styles['Heading2']))
+    story.append(Paragraph(product_name, styles['Heading2']))
     story.append(Spacer(1, 0.3*inch))
-    story.append(Paragraph(f"Generated: {metadata.get('generated_at', '')[:10]}", styles['Normal']))
+    if generated_at:
+        story.append(Paragraph(f"Generated: {generated_at[:10]}", styles['Normal']))
     story.append(PageBreak())
     
     # Product Information Section
@@ -214,26 +219,30 @@ def generate_pdf(product_data, plan_data):
     
     # Marketing Plan Sections
     sections = plan_data.get('sections', {})
-    for section_key in sorted(sections.keys()):
-        section = sections[section_key]
-        title = section.get('title', '')
-        description = section.get('description', '')
-        content = section.get('content', {})
-        
-        # Section title
-        story.append(Paragraph(title, heading_style))
-        if description:
-            story.append(Paragraph(f"<i>{description}</i>", styles['Italic']))
-        story.append(Spacer(1, 0.1*inch))
-        
-        # Section content
-        _add_content_to_pdf(content, story, styles, subheading_style)
-        story.append(Spacer(1, 0.2*inch))
-        
-        # Page break after every 3 sections
-        section_num = int(section_key.split('_')[0])
-        if section_num % 3 == 0 and section_num < 12:
-            story.append(PageBreak())
+    
+    if not sections:
+        story.append(Paragraph("No marketing plan sections available", styles['Normal']))
+    else:
+        for section_key in sorted(sections.keys()):
+            section = sections[section_key]
+            title = section.get('title', 'Section')
+            description = section.get('description', '')
+            content = section.get('content', {})
+            
+            # Section title
+            story.append(Paragraph(title, heading_style))
+            if description:
+                story.append(Paragraph(f"<i>{description}</i>", styles['Italic']))
+            story.append(Spacer(1, 0.1*inch))
+            
+            # Section content
+            _add_content_to_pdf(content, story, styles, subheading_style)
+            story.append(Spacer(1, 0.2*inch))
+            
+            # Page break after every 3 sections
+            section_num = int(section_key.split('_')[0])
+            if section_num % 3 == 0 and section_num < 12:
+                story.append(PageBreak())
     
     # Build PDF
     doc.build(story)
@@ -1531,6 +1540,10 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
                 # Download as PDF
                 try:
+                    # Debug: Check what data we have
+                    if not st.session_state.form_data:
+                        st.warning("⚠️ No product form data available. Using plan metadata only.")
+                    
                     pdf_buffer = generate_pdf(st.session_state.form_data, plan_data)
                     st.download_button(
                         label="📄 Download as PDF",
