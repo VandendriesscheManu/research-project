@@ -139,7 +139,29 @@ def display_dict_content(data, level=0, section_key=""):
     if 'raw' in data and len(data) == 1:
         raw_text = data.get('raw', '')
         if raw_text:
-            st.write(raw_text)
+            # Try to extract meaningful text before JSON
+            lines = raw_text.split('\n')
+            text_lines = []
+            in_json = False
+            
+            for line in lines:
+                stripped = line.strip()
+                # Check if line starts JSON block
+                if stripped.startswith('{') or stripped.startswith('['):
+                    in_json = True
+                    continue
+                # Skip JSON content
+                if in_json:
+                    continue
+                # Add non-JSON text
+                if stripped and not stripped.startswith('}') and not stripped.startswith(']'):
+                    text_lines.append(line)
+            
+            # If we found text, show it, otherwise show raw
+            if text_lines:
+                st.write('\n'.join(text_lines))
+            else:
+                st.info("Content generation is still in progress. The section structure is being prepared but detailed content may be incomplete. Please regenerate the plan for complete results.")
         return
     
     for key, value in data.items():
