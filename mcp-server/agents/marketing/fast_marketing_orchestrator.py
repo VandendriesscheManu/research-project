@@ -249,7 +249,7 @@ Format as JSON: {{
     ]
 }}"""
         
-        goals = self._generate(goals_prompt, 500)
+        goals = self._generate(goals_prompt, 650)
         
         print("  → Generating marketing mix (7Ps)...")
         mix_prompt = f"""Create comprehensive MARKETING MIX (7Ps Strategy) for {product_name}. Respond in ENGLISH.
@@ -294,7 +294,7 @@ Format as JSON: {{
     "physical_evidence": {{"store_design": "...", "website_ux": "...", "testimonials": "..."}}
 }}"""
         
-        marketing_mix = self._generate(mix_prompt, 1200)  # Increased from 800 to 1200 for more complete 7Ps
+        marketing_mix = self._generate(mix_prompt, 950)  # Balanced token limit for complete 7Ps with valid JSON
         
         print("  → Generating action plan...")
         action_prompt = f"""Create detailed ACTION PLAN for {product_name} launch. Respond in ENGLISH.
