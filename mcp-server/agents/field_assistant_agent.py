@@ -24,35 +24,38 @@ class FieldAssistantAgent:
         # Build context summary
         context_text = self._build_context(context)
         
-        # Field-specific prompts
+        # Field-specific prompts - Direct output format
         field_prompts = {
-            "product_category": f"Based on this product information, suggest a concise product category (1-3 words):\n{context_text}",
-            "product_features": f"Based on this product, list 3-5 key features and functionalities:\n{context_text}",
-            "product_usp": f"Based on this product, identify 2-3 unique selling points that differentiate it:\n{context_text}",
-            "product_branding": f"Based on this product, suggest branding and packaging ideas:\n{context_text}",
-            "target_primary": f"Based on this product, describe the primary target audience:\n{context_text}",
-            "target_demographics": f"Based on this product and target audience, provide demographic details (age, gender, location, income):\n{context_text}",
-            "target_psychographics": f"Based on this product and target audience, describe psychographic details (interests, lifestyle, values):\n{context_text}",
-            "target_problems": f"Based on this product, what customer needs or problems does it solve?\n{context_text}",
-            "competitors": f"Based on this product category, list 3-5 key competitors:\n{context_text}",
-            "suggested_price": f"Based on this product and market, suggest a price or price range:\n{context_text}",
-            "marketing_channels": f"Based on this product and target audience, suggest the best marketing channels:\n{context_text}",
-            "tone_of_voice": f"Based on this product and target audience, suggest the brand's tone of voice and key message:\n{context_text}",
-            "sales_goals": f"Based on this product and market, suggest realistic sales goals:\n{context_text}",
+            "product_category": f"Product category (1-3 words):\n{context_text}",
+            "product_features": f"List 3-5 key product features:\n{context_text}",
+            "product_usp": f"List 2-3 unique selling points:\n{context_text}",
+            "product_branding": f"Branding and packaging ideas:\n{context_text}",
+            "target_primary": f"Primary target audience:\n{context_text}",
+            "target_demographics": f"Demographics (age, gender, location, income):\n{context_text}",
+            "target_psychographics": f"Psychographics (interests, lifestyle, values):\n{context_text}",
+            "target_problems": f"Customer needs and problems this solves:\n{context_text}",
+            "competitors": f"Key competitors (3-5):\n{context_text}",
+            "suggested_price": f"Suggested price or price range:\n{context_text}",
+            "marketing_channels": f"Best marketing channels:\n{context_text}",
+            "tone_of_voice": f"Brand tone of voice and key message:\n{context_text}",
+            "sales_goals": f"Realistic sales goals:\n{context_text}",
+            "market_share_goals": f"Market share goals:\n{context_text}",
+            "brand_awareness_goals": f"Brand awareness goals:\n{context_text}",
+            "kpis": f"Key metrics to track (KPIs):\n{context_text}",
         }
         
         # Get the appropriate prompt or use a generic one
         prompt = field_prompts.get(
             field_name,
-            f"Based on the following product information, suggest a value for '{field_name}':\n{context_text}"
+            f"Suggestion for {field_name.replace('_', ' ')}:\n{context_text}"
         )
         
-        # Add instruction for concise response
-        full_prompt = f"{prompt}\n\nProvide a clear, concise, and actionable suggestion. Keep it brief and directly usable."
+        # Add instruction for direct response
+        full_prompt = f"{prompt}\n\nProvide ONLY the direct answer without any introductory phrases like 'Based on...' or 'I suggest...'. Write as if filling the field directly."
         
         # Call LLM
         messages = [
-            {"role": "system", "content": "You are a helpful marketing assistant that provides concise, practical suggestions for product marketing plans. Keep responses brief and directly usable."},
+            {"role": "system", "content": "You are a marketing assistant. Provide direct, concise content that can be used immediately in the field. Never use phrases like 'Based on...', 'I suggest...', 'Consider...', 'For this field...', or any other introductory language. Write as if you are filling the field yourself with the actual content."},
             {"role": "user", "content": full_prompt}
         ]
         
