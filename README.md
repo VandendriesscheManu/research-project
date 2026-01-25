@@ -47,9 +47,54 @@ Streamlit Frontend (Cloud) → Cloudflare Tunnel → FastAPI Backend → MCP Ser
 - **Text Editor** (VS Code recommended)
 - **Python 3.11+** (only if running frontend locally outside Docker)
 
-## 🚀 Quick Setup
+## 🚀 Quick Setup Guide
 
-### 1. Clone the Repository
+### Step 1: Install Docker Desktop
+
+1. **Windows**: Download and install [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+   - Minimum: Windows 10 64-bit with WSL 2
+   - After install, restart your computer
+   - Start Docker Desktop from Start menu
+2. **Mac**: Download and install [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
+   - Choose the correct version (Apple Silicon or Intel)
+3. **Linux**: Follow [Docker Engine installation guide](https://docs.docker.com/engine/install/)
+
+**✅ Verify Docker is running:**
+
+```bash
+docker --version
+docker-compose --version
+```
+
+Expected output: Version numbers for both commands (e.g., Docker version 24.x.x).
+
+### Step 2: Clone the Repository
+
+```bash
+git clone https://github.com/VandendriesscheManu/research-project.git
+cd research-project
+```
+
+### Step 3: Get API Keys
+
+1. **Groq API Key** (required for LLM):
+   - Go to https://console.groq.com
+   - Sign up with Google/GitHub
+   - Create an API key (pay-as-you-go recommended for unlimited rate limits)
+   - Copy the key (starts with `gsk_`)
+
+2. **GitHub Token** (required for Gist URL management):
+   - Go to https://github.com/settings/tokens
+   - Click "Generate new token (classic)"
+   - Give it a name: `Marketing Plan Generator`
+   - Select only scope: `gist`
+   - Click "Generate token" and copy it (starts with `ghp_`)
+
+### Step 4: Create Environment File
+
+### Step 4: Create Environment File
+
+Copy the example environment file:
 
 ```bash
 git clone https://github.com/VandendriesscheManu/research-project.git
@@ -64,32 +109,48 @@ Copy the example environment file and configure it:
 cp .env.example .env
 ```
 
-Edit `.env` and set these required values:
+Edit `.env` and replace ALL placeholder values with your actual keys:
 
 ```env
-# API Configuration
-API_KEY=your_secret_api_key_here
+# ========================================
+# Backend Configuration
+# ========================================
+DATABASE_URL=postgresql://postgres:postgres@db:5432/marketing_db
 
-# Groq API (Get free key at https://console.groq.com)
-GROQ_API_KEY=your_groq_api_key_here
+# ========================================
+# LLM Configuration
+# ========================================
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_your_actual_groq_key_here
 
-# Postgres
-POSTGRES_PASSWORD=your_secure_postgres_password
+# ========================================
+# MCP Server Configuration
+# ========================================
+MCP_SERVER_CONFIG={"groq": {"apiKey": "gsk_your_actual_groq_key_here"}}
 
-# GitHub Gist (for Cloudflare URL sync)
-GITHUB_TOKEN=your_github_personal_access_token
+# ========================================
+# URL Management Configuration
+# ========================================
+GITHUB_TOKEN=ghp_your_actual_github_token_here
+GITHUB_GIST_ID=leave_empty_will_be_created_automatically
+TUNNEL_URL=http://localhost:8000
+
+# ========================================
+# Database Configuration
+# ========================================
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=marketing_db
 ```
 
-### 3. Create GitHub Personal Access Token
+**⚠️ Important**:
 
-1. Go to https://github.com/settings/tokens
-2. Click **"Generate new token"** → **"Generate new token (classic)"**
-3. Give it a name: `Cloudflare URL Gist`
-4. Select scope: **`gist`** (only this one)
-5. Click **"Generate token"** and copy it
-6. Add it to your `.env` file as `GITHUB_TOKEN`
+- Replace `gsk_your_actual_groq_key_here` with your Groq API key (from Step 3)
+- Replace `ghp_your_actual_github_token_here` with your GitHub token (from Step 3)
+- Leave `GITHUB_GIST_ID` empty - it will be created automatically
+- Use the SAME Groq key in both `GROQ_API_KEY` and `MCP_SERVER_CONFIG`
 
-### 4. Start the Services
+### Step 5: Start Services
 
 ```bash
 docker-compose up -d
@@ -97,134 +158,508 @@ docker-compose up -d
 
 This will:
 
+- Download all required Docker images (first time only, may take 5-10 minutes)
 - Start PostgreSQL database
-- Start MCP server
 - Start FastAPI backend
+- Start MCP server
 - Start Cloudflare tunnel
-- Create a GitHub Gist with the tunnel URL
+- Start URL extractor service
+- Initialize database with required tables
 
-### 5. Get Your Cloudflare URL
-
-After starting, check the logs:
+**✅ Verify all containers are running:**
 
 ```bash
-docker logs url-extractor
+docker-compose ps
 ```
 
-You'll see output like:
+Expected output: All 5 services (db, backend, mcp-server, cloudflare-tunnel, url-extractor) should show "Up" status.
 
-```
-✅ Created new Gist!
-📋 Gist ID: abc123def456
-📎 Raw URL: https://gist.githubusercontent.com/.../cloudflare_url.txt
+**🔍 Check logs if something fails:**
 
-⚠️  IMPORTANT: Add these to your .env file:
-   GIST_ID=abc123def456
-   GIST_RAW_URL=https://gist.githubusercontent.com/.../cloudflare_url.txt
-```
+```bash
+# View all logs
+docker-compose logs
 
-**Important:** Add `GIST_ID` and `GIST_RAW_URL` to your `.env` file:
-
-```env
-GIST_ID=abc123def456
-GIST_RAW_URL=https://gist.githubusercontent.com/YOUR_USERNAME/YOUR_GIST_ID/raw/cloudflare_url.txt
+# View specific service logs
+docker-compose logs backend
+docker-compose logs mcp-server
+docker-compose logs cloudflare-tunnel
 ```
 
-**Note:** Remove the commit hash from the URL (anything after `/raw/`) to always get the latest version.
+### Step 6: Get Your Cloudflare Tunnel URL
 
-### 6. Deploy Frontend to Streamlit Cloud
+After starting services, find your public tunnel URL:
 
-1. Fork this repository to your GitHub account
-2. Go to https://share.streamlit.io/
-3. Click **"New app"**
-4. Select your forked repository
-5. Set **Main file path**: `frontend/app.py`
-6. Click **"Advanced settings"** → **"Secrets"**
-7. Add:
+```bash
+docker-compose logs cloudflare-tunnel | grep "trycloudflare.com"
+```
+
+You'll see a line like:
+
+```
+cloudflare-tunnel | https://random-words-1234.trycloudflare.com
+```
+
+Copy this URL - you'll need it for the frontend deployment.
+
+### Step 7: Deploy Frontend on Streamlit Cloud
+
+The frontend runs on Streamlit Cloud (free hosting):
+
+1. **Push code to GitHub** (if not already done):
+
+```bash
+git add .
+git commit -m "Initial setup"
+git push origin main
+```
+
+2. **Deploy on Streamlit Cloud**:
+   - Go to https://share.streamlit.io
+   - Sign in with GitHub
+   - Click "New app"
+   - Select your repository: `your-username/research-project`
+   - Set **Main file path**: `frontend/app.py`
+   - Set **Python version**: `3.11`
+   - Click "Advanced settings"
+   - Click "Deploy"
+
+3. **Configure Streamlit Secrets**:
+   - After deployment, click on your app
+   - Go to **Settings** → **Secrets**
+   - Add your GitHub credentials:
 
 ```toml
-API_KEY = "your_secret_api_key_here"
-GIST_RAW_URL = "https://gist.githubusercontent.com/YOUR_USERNAME/YOUR_GIST_ID/raw/cloudflare_url.txt"
+GITHUB_TOKEN = "ghp_your_actual_github_token_here"
+GITHUB_GIST_ID = "your_gist_id_from_docker_logs"
 ```
 
-8. Click **"Deploy"**
+To find your `GITHUB_GIST_ID`, check backend logs:
 
-## 🔧 Configuration
+```bash
+docker-compose logs backend | grep "Gist ID"
+```
 
-### LLM Provider Options
+4. **Save and Reboot** the Streamlit app
 
-#### Groq (Recommended for Production)
+### Step 8: Verify Everything Works
 
-- Fast responses (< 2 seconds)
+1. **Check backend API**:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected: `{"status":"healthy"}`
+
+2. **Check tunnel is accessible**:
+   - Open your Cloudflare tunnel URL in browser
+   - You should see FastAPI documentation
+
+3. **Test the frontend**:
+   - Open your Streamlit app URL
+   - Toggle "📝 Fill form with demo data" switch
+   - Click through the 8 form steps
+   - Click "🚀 Generate Marketing Plan"
+   - Wait 30-60 seconds
+   - You should see:
+     - ✅ Evaluation scores (6 criteria)
+     - ✅ 12 marketing plan sections
+     - ✅ Strengths and weaknesses analysis
+
+✅ **Setup Complete!** Your AI Marketing Plan Generator is fully operational.
+
+---
+
+## 💻 Local Development (Optional)
+
+If you want to run the frontend locally instead of Streamlit Cloud:
+
+### Prerequisites
+
+- **Python 3.11+**: Download from https://www.python.org/downloads/
+
+### Setup
+
+1. **Navigate to frontend folder**:
+
+```bash
+cd frontend
+```
+
+2. **Create virtual environment**:
+
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+3. **Install dependencies**:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. **Create `.streamlit/secrets.toml`**:
+
+```bash
+mkdir .streamlit
+```
+
+Edit `.streamlit/secrets.toml`:
+
+```toml
+GITHUB_TOKEN = "ghp_your_actual_github_token_here"
+GITHUB_GIST_ID = "your_gist_id"
+```
+
+5. **Run Streamlit**:
+
+```bash
+streamlit run app.py
+```
+
+6. **Open browser**: http://localhost:8501
+
+### Hot Reloading
+
+Streamlit automatically reloads when you save changes to `app.py`.
+
+---
+
+## 📊 Usage
+
+### Generating a Marketing Plan
+
+1. **Start with Demo Data** (recommended for first time):
+   - Toggle "📝 Fill form with demo data"
+   - This fills the form with EcoBottle Pro example
+
+2. **Fill the 8-Step Form**:
+   - Step 1: Product Information
+   - Step 2: Target Audience
+   - Step 3: Market Context
+   - Step 4: Unique Selling Points
+   - Step 5: Brand Identity
+   - Step 6: Goals & Metrics
+   - Step 7: Constraints
+   - Step 8: Additional Information
+
+3. **Use AI Assistants** (✨ buttons):
+   - Click ✨ next to any field for AI suggestions
+   - Copy suggestions or modify them
+   - Available for all text inputs
+
+4. **Generate Plan**:
+   - Click "🚀 Generate Marketing Plan"
+   - Wait 30-60 seconds (8-15 LLM calls)
+   - Cost: ~$0.0008 per plan
+
+5. **Review Results**:
+   - **Evaluation Section**: AI-generated quality scores
+     - Consistency, Quality, Originality
+     - Feasibility, Completeness, Ethics
+     - Strengths and weaknesses
+   - **12 Marketing Sections**: Navigate with Previous/Next
+     - Executive Summary
+     - Mission & Vision
+     - Market Analysis
+     - SWOT Analysis
+     - Positioning & Messaging
+     - Marketing Goals
+     - Marketing Mix (7Ps)
+     - Action Plan
+     - Budget
+     - Monitoring Plan
+     - Risk Management
+     - Launch Strategy
+
+### Understanding Costs
+
+- **Generation**: ~8 LLM calls with llama-3.1-8b-instant
+- **Evaluation**: ~6-7 LLM calls with llama-3.3-70b-versatile
+- **Total cost**: ~$0.0008 per complete marketing plan
+- **AI Assistant**: ~$0.00001 per suggestion
+
+With Groq's pay-as-you-go plan:
+
+- 1000 marketing plans = ~$0.80
+- Unlimited rate limits
+- Fast response times (<5s per call)
+
+---
+
+## 🔧 Configuration Details
+
+### Environment Variables Reference
+
+| Variable            | Description                  | Required        | Default               |
+| ------------------- | ---------------------------- | --------------- | --------------------- |
+| `GROQ_API_KEY`      | Groq API key for LLM         | ✅ Yes          | None                  |
+| `MCP_SERVER_CONFIG` | JSON config with Groq key    | ✅ Yes          | None                  |
+| `GITHUB_TOKEN`      | GitHub PAT with gist scope   | ✅ Yes          | None                  |
+| `GITHUB_GIST_ID`    | Gist ID for URL storage      | After first run | Auto-created          |
+| `DATABASE_URL`      | PostgreSQL connection string | ✅ Yes          | postgresql://...      |
+| `POSTGRES_USER`     | Database username            | ✅ Yes          | postgres              |
+| `POSTGRES_PASSWORD` | Database password            | ✅ Yes          | postgres              |
+| `POSTGRES_DB`       | Database name                | ✅ Yes          | marketing_db          |
+| `LLM_PROVIDER`      | LLM provider selection       | No              | groq                  |
+| `TUNNEL_URL`        | Internal backend URL         | No              | http://localhost:8000 |
+
+### LLM Models Used
+
+- **Generation**: `llama-3.1-8b-instant` - Fast, cost-effective for plan generation
+- **Evaluation**: `llama-3.3-70b-versatile` - More capable for quality assessment
+- **AI Assistant**: `llama-3.1-8b-instant` - Quick suggestions
+
+### Database Schema
+
+The PostgreSQL database includes:
+
+- `product_briefs` - Stores form submissions
+- `marketing_plans` - Generated marketing plans
+- `conversations` - Chat history (legacy)
+
+---
+
+## 🔍 Troubleshooting
+
+### Docker Issues
+
+**Problem**: `docker-compose: command not found`
+
+```bash
+# Solution: Install Docker Desktop or Docker Compose
+# Windows/Mac: Install Docker Desktop
+# Linux: sudo apt install docker-compose
+```
+
+**Problem**: Permission denied on Docker
+
+```bash
+# Linux solution
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+**Problem**: Containers not starting
+
+```bash
+# Check logs
+docker-compose logs
+
+# Restart services
+docker-compose down
+docker-compose up -d
+
+# Check if ports are in use
+# Windows: netstat -ano | findstr :8000
+# Mac/Linux: lsof -i :8000
+```
+
+### API/Backend Issues
+
+**Problem**: `curl http://localhost:8000/health` fails
+
+```bash
+# Check if backend container is running
+docker-compose ps backend
+
+# Check backend logs
+docker-compose logs backend
+
+# Check if port 8000 is accessible
+curl -v http://localhost:8000/health
+```
+
+**Problem**: "Internal server error" from API
+
+```bash
+# Check database connection
+docker-compose logs db
+
+# Restart backend
+docker-compose restart backend
+```
+
+### Groq API Issues
+
+**Problem**: "Invalid API key"
+
+- Verify your `.env` has correct `GROQ_API_KEY`
+- Check key starts with `gsk_`
+- Ensure same key in `MCP_SERVER_CONFIG`
+- Restart services: `docker-compose restart`
+
+**Problem**: "Rate limit exceeded"
+
 - Free tier: 30 requests/minute
-- Models: llama-3.3-70b-versatile, mixtral, etc.
+- Upgrade to pay-as-you-go at https://console.groq.com
+- Wait 60 seconds and try again
 
-```env
-LLM_PROVIDER=groq
-LLM_MODEL=llama-3.3-70b-versatile
-GROQ_API_KEY=your_groq_api_key
+**Problem**: "Model not found"
+
+- Check model name is correct: `llama-3.1-8b-instant`
+- View available models at https://console.groq.com/docs/models
+
+### Streamlit Frontend Issues
+
+**Problem**: Frontend shows "Connection error"
+
+- Check Cloudflare tunnel URL is correct
+- Verify `GITHUB_GIST_ID` in Streamlit secrets
+- Check backend logs: `docker-compose logs backend`
+- Wait 30 seconds for tunnel to start
+
+**Problem**: "Failed to fetch URL from Gist"
+
+- Verify `GITHUB_TOKEN` has `gist` scope
+- Check token is valid: https://github.com/settings/tokens
+- Verify `GITHUB_GIST_ID` exists in backend logs
+- Update Streamlit secrets with correct values
+
+**Problem**: Demo data not filling form
+
+- Refresh the page (Ctrl+R)
+- Clear browser cache
+- Check browser console for errors (F12)
+
+### Cloudflare Tunnel Issues
+
+**Problem**: Tunnel URL changes on restart
+
+- This is normal behavior (free tunnel)
+- URL automatically syncs via Gist
+- Frontend fetches new URL within 10 seconds
+- No action needed
+
+**Problem**: Tunnel URL not accessible
+
+```bash
+# Check tunnel logs
+docker-compose logs cloudflare-tunnel
+
+# Look for URL in output
+docker-compose logs cloudflare-tunnel | grep "trycloudflare.com"
+
+# Restart tunnel
+docker-compose restart cloudflare-tunnel
 ```
 
-#### Ollama (Local, Offline)
+**Problem**: Gist not updating with new URL
 
-- Install Ollama: https://ollama.ai
-- Pull a model: `ollama pull llama3.2`
-- Used as automatic fallback when Groq fails
+```bash
+# Check url-extractor logs
+docker-compose logs url-extractor
 
-```env
-LLM_PROVIDER=ollama
-OLLAMA_MODEL=llama3.2
-OLLAMA_BASE_URL=http://host.docker.internal:11434
+# Verify GITHUB_TOKEN in .env
+grep GITHUB_TOKEN .env
+
+# Restart extractor
+docker-compose restart url-extractor
 ```
 
-### Environment Variables
+### Generation Issues
 
-| Variable            | Description                                  | Required                              |
-| ------------------- | -------------------------------------------- | ------------------------------------- |
-| `API_KEY`           | Secret key for API authentication            | ✅ Yes                                |
-| `GROQ_API_KEY`      | Groq API key for LLM                         | ✅ Yes                                |
-| `GITHUB_TOKEN`      | GitHub PAT with gist scope                   | ✅ Yes                                |
-| `GIST_ID`           | GitHub Gist ID (auto-generated on first run) | After first run                       |
-| `GIST_RAW_URL`      | Raw URL to Gist (without commit hash)        | After first run                       |
-| `POSTGRES_PASSWORD` | PostgreSQL password                          | ✅ Yes                                |
-| `LLM_PROVIDER`      | `groq` or `ollama`                           | No (default: groq)                    |
-| `LLM_MODEL`         | Model name for selected provider             | No (default: llama-3.3-70b-versatile) |
+**Problem**: "Evaluation unavailable" showing in plan
 
-## 📖 Usage
+- This is normal - evaluator failed but plan succeeded
+- Plan will still have all 12 sections
+- Check MCP server logs: `docker-compose logs mcp-server`
+- Retry generation for evaluation
 
-### Chat Mode (Quick Testing)
+**Problem**: Plan generation stuck/hanging
 
-1. Open your Streamlit app
-2. Select **"💬 Chat Mode (Test)"**
-3. Ask questions like:
-   - "What are good marketing strategies for a new coffee brand?"
-   - "How should I price my SaaS product?"
+- Wait at least 60 seconds (15+ LLM calls needed)
+- Check browser console for errors (F12)
+- Verify backend is responding: `curl http://localhost:8000/health`
+- Check Groq API status: https://status.groq.com
 
-### Full Marketing Plan Mode
+**Problem**: "Failed to generate plan"
 
-1. Select **"📝 Full Marketing Plan"**
-2. Fill in the comprehensive form:
-   - Product details
-   - Target audience
-   - Competition analysis
-   - Pricing strategy
-   - Distribution channels
-   - Goals and metrics
-3. Click **"Generate Marketing Plan"**
-4. Get a complete marketing strategy
+```bash
+# Check backend logs for details
+docker-compose logs backend | tail -100
 
-### Updating Cloudflare URL
+# Common causes:
+# - Groq API rate limit (wait 60s)
+# - Database connection failed (restart db)
+# - MCP server timeout (restart mcp-server)
+```
 
-When you restart your Docker containers, the Cloudflare URL changes automatically:
+### First-Time Setup Issues
 
-1. `docker-compose restart` → New tunnel URL created
-2. `url-extractor` detects it and updates the Gist
-3. Frontend fetches the new URL within 10 seconds
-4. **No manual updates needed!** ✅
+**Problem**: `.env` file not found
 
-### Custom Gist URL in Frontend
+```bash
+# Create from example
+cp .env.example .env
 
-Users can override the Gist URL in the Streamlit sidebar under **"🌐 Cloudflare URL Source"** without editing secrets.
+# Then edit with your keys
+```
+
+**Problem**: Gist ID not generating
+
+- Check `GITHUB_TOKEN` is set in `.env`
+- Token must have `gist` scope
+- Start backend and check logs: `docker-compose logs backend`
+- Look for "Created new gist:" message
+
+**Problem**: Python module errors in frontend
+
+```bash
+# Make sure you're in venv
+source venv/bin/activate  # Mac/Linux
+venv\Scripts\activate     # Windows
+
+# Reinstall dependencies
+pip install -r requirements.txt --force-reinstall
+```
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. **Check logs**: `docker-compose logs [service-name]`
+2. **Verify configuration**: Double-check `.env` file
+3. **Restart services**: `docker-compose restart`
+4. **Full reset**:
+
+```bash
+docker-compose down
+docker volume rm research-project_postgres_data
+docker-compose up -d
+```
+
+**Common log commands**:
+
+```bash
+# All logs
+docker-compose logs
+
+# Specific service
+docker-compose logs backend
+docker-compose logs mcp-server
+
+# Follow logs live
+docker-compose logs -f backend
+
+# Last 100 lines
+docker-compose logs --tail=100 backend
+```
+
+---
+
+## 🛠️ Development
+
+### Project Structure
+
+---
 
 ## 🛠️ Development
 
@@ -232,153 +667,255 @@ Users can override the Gist URL in the Streamlit sidebar under **"🌐 Cloudflar
 
 ```
 research-project/
-├── backend/           # FastAPI backend
-│   ├── main.py
+├── backend/                    # FastAPI backend
+│   ├── main.py                # Main API endpoints
 │   ├── core/
-│   │   ├── db.py     # PostgreSQL operations
-│   │   └── mcp_client.py  # MCP communication
-│   └── Dockerfile
-├── frontend/          # Streamlit frontend
-│   ├── app.py
-│   └── requirements.txt
-├── mcp-server/        # MCP server with agents
-│   ├── server.py
+│   │   ├── db.py             # PostgreSQL operations
+│   │   └── mcp_client.py     # MCP communication
 │   ├── agents/
-│   │   ├── marketing_agent.py
-│   │   ├── field_assistant_agent.py
-│   │   └── llm_client.py
+│   │   ├── fast_marketing_orchestrator.py  # Marketing plan generation
+│   │   ├── field_assistant_agent.py        # AI field suggestions
+│   │   └── evaluator_agent.py             # Plan quality evaluation
+│   ├── requirements.txt
+│   └── Dockerfile
+├── frontend/                   # Streamlit frontend
+│   ├── app.py                # Main UI (1400+ lines)
+│   ├── requirements.txt      # streamlit, requests
+│   └── .streamlit/
+│       └── secrets.toml      # GitHub token, Gist ID
+├── mcp-server/                # MCP server with LLM client
+│   ├── server.py             # MCP protocol handler
+│   ├── agents/
+│   │   └── llm_client.py    # Groq API integration
+│   ├── requirements.txt
 │   └── dockerfile
-├── url-extractor/     # Cloudflare URL sync service
-│   ├── extract_url.py
+├── url-extractor/             # Cloudflare URL sync service
+│   ├── extract_url.py        # Monitors tunnel logs
+│   ├── requirements.txt
 │   └── Dockerfile
 ├── db/
-│   └── init.sql      # Database initialization
-├── docker-compose.yml
-├── .env.example
-└── README.md
+│   └── init.sql              # Database schema
+├── docker-compose.yml         # 5 services orchestration
+├── .env.example              # Environment template
+└── README.md                 # This file
 ```
 
-### Local Development
+### Architecture Overview
 
-#### Backend API
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Streamlit Cloud                             │
+│                     (Frontend UI)                               │
+└───────────────┬─────────────────────────────────────────────────┘
+                │ HTTPS
+                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              Cloudflare Tunnel (Free)                           │
+│              https://random.trycloudflare.com                   │
+└───────────────┬─────────────────────────────────────────────────┘
+                │ HTTP
+                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   FastAPI Backend                               │
+│              (Docker Container - Port 8000)                     │
+│   • Product brief storage                                       │
+│   • Marketing plan compilation                                  │
+│   • PostgreSQL communication                                    │
+│   • MCP client integration                                      │
+└──────┬──────────────────┬─────────────────────────────────┬────┘
+       │                  │                                 │
+       │ Local            │ JSON-RPC                       │ SQL
+       ▼                  ▼                                 ▼
+┌──────────────┐   ┌──────────────────┐          ┌─────────────────┐
+│ Orchestrator │   │   MCP Server     │          │   PostgreSQL    │
+│    Agent     │   │  (Port 5000)     │          │   (Port 5432)   │
+│              │   │                  │          │                 │
+│ • Research   │   │ • LLM Client     │          │ • Product data  │
+│ • Strategy   │   │ • Groq API       │          │ • Marketing     │
+│ • Generation │   │ • Prompt mgmt    │          │   plans         │
+│ • Evaluation │   │                  │          │                 │
+└──────────────┘   └──────┬───────────┘          └─────────────────┘
+                          │ HTTPS
+                          ▼
+                   ┌──────────────────┐
+                   │    Groq API      │
+                   │                  │
+                   │ • llama-3.1-8b   │
+                   │ • llama-3.3-70b  │
+                   └──────────────────┘
 
-```bash
-# View API documentation
-# Access: https://your-cloudflare-url.trycloudflare.com/docs
-
-# Check logs
-docker logs api
-
-# Run tests
-docker exec api pytest
+┌─────────────────────────────────────────────────────────────────┐
+│                   URL Sync (Background)                         │
+│                                                                 │
+│   Cloudflare → url-extractor → GitHub Gist → Streamlit         │
+│      logs         Docker           API        secrets.toml      │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-#### Frontend
+### Development Workflow
+
+#### Working on Backend
 
 ```bash
-# Run locally
+# View real-time logs
+docker-compose logs -f backend
+
+# Restart after code changes
+docker-compose restart backend
+
+# Access Python shell
+docker exec -it backend python
+
+# Run database migrations (if needed)
+docker exec -it backend python -m alembic upgrade head
+```
+
+#### Working on Frontend
+
+```bash
+# Run locally for development
 cd frontend
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 streamlit run app.py
+
+# Deploy to Streamlit Cloud
+git push origin main
+# Streamlit Cloud auto-deploys on push
 ```
 
-#### MCP Server
+#### Working on MCP Server
 
 ```bash
-# Check MCP server logs
-docker logs mcp-server
+# View MCP logs
+docker-compose logs -f mcp-server
 
-# Access MCP inspector UI (if enabled)
-# http://localhost:6274
+# Test MCP connection
+docker exec -it backend python -c "from core.mcp_client import MCPClient; print(MCPClient().get_llm_response('test'))"
+
+# Restart MCP server
+docker-compose restart mcp-server
 ```
 
-## 🔍 Troubleshooting
-
-### Cloudflare URL Not Updating
-
-Check url-extractor logs:
+#### Database Operations
 
 ```bash
-docker logs url-extractor
+# Connect to PostgreSQL
+docker exec -it db psql -U postgres -d marketing_db
+
+# View tables
+\dt
+
+# View product briefs
+SELECT id, name, category FROM product_briefs;
+
+# View marketing plans
+SELECT id, brief_id, created_at FROM marketing_plans;
+
+# Backup database
+docker exec db pg_dump -U postgres marketing_db > backup.sql
+
+# Restore database
+docker exec -i db psql -U postgres marketing_db < backup.sql
 ```
 
-Common issues:
+### API Documentation
 
-- ❌ `GITHUB_TOKEN` not set → Add token to `.env`
-- ❌ 404 error → Gist ID is incorrect
-- ❌ Old URL showing → Remove commit hash from `GIST_RAW_URL`
+Once running, access interactive API docs:
 
-### Frontend Shows Wrong URL
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
 
-1. Make sure `GIST_RAW_URL` in Streamlit secrets has **no commit hash**
-2. Correct format: `.../raw/cloudflare_url.txt`
-3. Wrong format: `.../raw/abc123.../cloudflare_url.txt`
-4. Wait 10 seconds for cache to refresh
+Key endpoints:
 
-### LLM Errors
+- `POST /api/product-brief` - Create product brief
+- `POST /api/marketing-plan` - Generate marketing plan
+- `POST /api/field-assistant` - Get AI field suggestions
+- `GET /api/product-brief/{id}` - Get product brief
+- `GET /health` - Health check
+
+### Testing
 
 ```bash
-# Check MCP server logs
-docker logs mcp-server
+# Test backend health
+curl http://localhost:8000/health
 
-# Test Groq API
-curl -H "Authorization: Bearer $GROQ_API_KEY" https://api.groq.com/openai/v1/models
+# Test field assistant
+curl -X POST http://localhost:8000/api/field-assistant \
+  -H "Content-Type: application/json" \
+  -d '{"field":"target_audience","context":"eco-friendly water bottle"}'
 
-# Test Ollama (if running locally)
-curl http://localhost:11434/api/tags
+# Test plan generation (will take 30-60s)
+curl -X POST http://localhost:8000/api/marketing-plan \
+  -H "Content-Type: application/json" \
+  -d @sample_brief.json
 ```
 
-### Database Connection Issues
+### Monitoring
 
 ```bash
-# Check database health
-docker exec db pg_isready -U chatuser -d chatdb
+# Container resource usage
+docker stats
 
-# View database logs
-docker logs db
+# View all container logs
+docker-compose logs
 
-# Reset database
-docker-compose down -v
-docker-compose up -d
+# Check container health
+docker-compose ps
+
+# Network inspection
+docker network inspect research-project_default
 ```
-
-## 🔐 Security Notes
-
-- Never commit `.env` file to Git
-- Keep `API_KEY` and `GITHUB_TOKEN` secret
-- Gists are private by default (check your Gist settings)
-- Rotate tokens regularly
-- Use strong passwords for PostgreSQL
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 👥 Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## 🙏 Acknowledgments
-
-- [Streamlit](https://streamlit.io/) - Frontend framework
-- [FastAPI](https://fastapi.tiangolo.com/) - Backend framework
-- [Groq](https://console.groq.com/) - Fast LLM inference
-- [Ollama](https://ollama.ai/) - Local LLM runtime
-- [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/) - Secure tunneling
-
-## 📧 Support
-
-For issues and questions:
-
-- Create an issue on GitHub
-- Check existing documentation
-- Review Docker logs
 
 ---
 
-Made with ❤️ for AI-powered marketing automation
+## 🔐 Security
+
+- ✅ Never commit `.env` file to Git
+- ✅ Keep `GROQ_API_KEY` and `GITHUB_TOKEN` secret
+- ✅ Rotate API keys regularly
+- ✅ Use strong passwords for PostgreSQL
+- ✅ Gists created are private by default
+- ✅ Cloudflare tunnel provides HTTPS encryption
+- ✅ Backend validates all inputs
+
+**Important**: This setup uses a free Cloudflare tunnel which changes URL on restart. For production:
+
+- Use Cloudflare Zero Trust with permanent tunnel
+- Add custom domain
+- Enable authentication
+- Use managed database service
+
+---
+
+## 📝 License
+
+This project is for educational/research purposes.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Streamlit** - Beautiful Python web apps
+- **FastAPI** - Modern Python API framework
+- **Groq** - Fast LLM inference
+- **MCP** - Model Context Protocol
+- **Cloudflare** - Free secure tunneling
+- **PostgreSQL** - Reliable database
+
+---
+
+## 📧 Support
+
+For questions or issues:
+
+- Check this README first
+- Review [Troubleshooting](#-troubleshooting) section
+- Check Docker logs: `docker-compose logs`
+- Verify `.env` configuration
+- Test with demo data first
+
+---
+
+**Made with ❤️ for AI-powered marketing automation**
