@@ -1438,13 +1438,13 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                     for rec in evaluation.get('recommendations', []):
                         st.info(rec)
                 
-                # Display all 12 sections
+                # Display all 12 sections with navigation arrows
                 st.divider()
                 st.subheader("📋 Complete Marketing Plan")
                 
                 sections = plan_content.get('sections', {})
                 
-                # Create tabs for each section
+                # Section configuration
                 section_names = [
                     "1. Executive Summary",
                     "2. Mission & Vision",
@@ -1459,8 +1459,6 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                     "11. Risks",
                     "12. Launch Strategy"
                 ]
-                
-                tabs = st.tabs(section_names)
                 
                 section_keys = [
                     "1_executive_summary",
@@ -1477,26 +1475,45 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                     "12_launch_strategy"
                 ]
                 
-                for idx, (tab, section_key) in enumerate(zip(tabs, section_keys)):
-                    with tab:
-                        section = sections.get(section_key, {})
-                        
-                        # Display section title with icon and description
-                        title = section.get('title', 'Section')
-                        description = section.get('description', '')
-                        
-                        st.markdown(f"## {title}")
-                        if description:
-                            st.info(f"ℹ️ {description}")
-                        
-                        st.markdown("---")
-                        
-                        # Display section content with section_key for special formatting
-                        content = section.get('content', {})
-                        if isinstance(content, dict):
-                            display_dict_content(content, section_key=section_key)
-                        else:
-                            st.write(content)
+                # Initialize current section index
+                if 'current_section_idx' not in st.session_state:
+                    st.session_state.current_section_idx = 0
+                
+                # Navigation controls
+                nav_col1, nav_col2, nav_col3 = st.columns([1, 3, 1])
+                with nav_col1:
+                    if st.button("⬅️ Previous", disabled=st.session_state.current_section_idx == 0, use_container_width=True):
+                        st.session_state.current_section_idx -= 1
+                        st.rerun()
+                with nav_col2:
+                    st.markdown(f"<h4 style='text-align: center;'>{section_names[st.session_state.current_section_idx]}</h4>", unsafe_allow_html=True)
+                with nav_col3:
+                    if st.button("Next ➡️", disabled=st.session_state.current_section_idx >= len(section_keys) - 1, use_container_width=True):
+                        st.session_state.current_section_idx += 1
+                        st.rerun()
+                
+                st.divider()
+                
+                # Display current section
+                idx = st.session_state.current_section_idx
+                section_key = section_keys[idx]
+                
+                if section_key in sections:
+                    section = sections[section_key]
+                    
+                    # Section description
+                    description = section.get('description', '')
+                    if description:
+                        st.info(f"ℹ️ {description}")
+                    
+                    st.markdown("---")
+                    
+                    # Display section content
+                    content = section.get('content', {})
+                    if isinstance(content, dict):
+                        display_dict_content(content, section_key=section_key)
+                    else:
+                        st.write(content)
                 
                 # Download options
                 st.divider()
