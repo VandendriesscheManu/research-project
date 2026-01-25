@@ -1278,11 +1278,16 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
                 # Display metadata
                 metadata = plan_content.get('metadata', {})
+                evaluation = plan_content.get('evaluation', {})
+                
+                # Use overall_score from evaluation for the quality score display
+                overall_score = evaluation.get('overall_score', metadata.get('quality_score', 0))
+                
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric("Product", metadata.get('product_name', 'N/A'))
                 with col2:
-                    st.metric("Quality Score", f"{metadata.get('quality_score', 0):.1f}/10")
+                    st.metric("Quality Score", f"{overall_score:.1f}/10")
                 with col3:
                     st.metric("Version", metadata.get('version', 'N/A'))
                 
@@ -1290,7 +1295,6 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
                 # Display evaluation summary
                 st.divider()
-                evaluation = plan_content.get('evaluation', {})
                 
                 st.subheader("📊 Evaluation Summary")
                 
