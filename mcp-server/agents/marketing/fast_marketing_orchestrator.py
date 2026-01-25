@@ -15,6 +15,7 @@ class FastMarketingOrchestrator:
     - Shorter, concise outputs (300-600 words per section)
     - Faster model (llama-3.1-8b-instant for Groq)
     - Synchronous execution for reliability
+    - Optional evaluator agent for quality assessment
     """
     
     def __init__(self):
@@ -23,6 +24,9 @@ class FastMarketingOrchestrator:
         if self.llm.provider == "groq":
             self.llm.model = "llama-3.1-8b-instant"
             print(f"⚡ Fast mode: Using {self.llm.model}")
+        
+        # Evaluator will be imported when needed to avoid circular imports
+        self.evaluator = None
     
     def _generate(self, prompt: str, max_tokens: int = 800) -> str:
         """Generate text using LLM"""
@@ -519,11 +523,76 @@ Format as JSON: {{
             print(f"❌ JSON parse error: {e}")
             return {"error": str(e), "raw_content": text[:1000] if text else "No response"}
     
+    def _generate_evaluation(self, product_data: Dict, research: Dict, strategy: Dict) -> Dict:
+        """Generate evaluation using evaluator agent"""
+        print("\n🔍 Generating plan evaluation...")
+        
+        try:
+            # Lazy import to avoid circular imports
+            if self.evaluator is None:
+                from .evaluator_agent import evaluator_agent
+                self.evaluator = evaluator_agent
+            
+            # Prepare data for evaluator
+            research_data = {
+                "target_audience": research.get('market_intelligence', {}).get('target_demographics', {}),
+                "swot_analysis": research.get('swot', {})
+            }
+            
+            strategy_data = {
+                "positioning": strategy.get('positioning', {}),
+                "messaging": strategy.get('positioning', {}).get('key_messages', []),
+                "marketing_goals": strategy.get('goals', {}),
+                "marketing_mix": strategy.get('marketing_mix', {}),
+                "budget": strategy.get('budget_monitoring', {}).get('budget', {})
+            }
+            
+            # Run full evaluation
+            evaluation = self.evaluator.evaluate_full_plan(
+                product_data=product_data,
+                research_data=research_data,
+                strategy_data=strategy_data
+            )
+            
+            return evaluation
+            
+        except Exception as e:
+            print(f"⚠️ Evaluation failed: {e}. Using fallback.")
+            # Fallback to basic evaluation
+            return {
+                "overall_score": 7.5,
+                "note": "Evaluation agent unavailable - using fallback",
+                "criterion_scores": {
+                    "consistency": 7.5,
+                    "quality": 7.5,
+                    "originality": 7.0,
+                    "feasibility": 8.0,
+                    "completeness": 7.0,
+                    "ethics": 8.5
+                },
+                "strengths": [
+                    "Quick generation time",
+                    "Comprehensive structure",
+                    "Clear actionable insights"
+                ],
+                "weaknesses": [
+                    "Evaluation agent unavailable"
+                ],
+                "final_recommendations": [
+                    "Review and customize generated content",
+                    "Add specific budget numbers",
+                    "Validate target audience assumptions"
+                ]
+            }
+    
     def _compile_plan(self, product_data: Dict, research: Dict, strategy: Dict) -> Dict:
         """Compile final 12-section plan"""
         print("\n📦 Compiling final plan...")
         
         product_name = product_data.get('product_name', 'Product')
+        
+        # Generate evaluation using evaluator agent
+        evaluation_data = self._generate_evaluation(product_data, research, strategy)
         
         market_intel = research.get('market_intelligence', {})
         swot = research.get('swot', {})
@@ -639,32 +708,7 @@ Format as JSON: {{
                     "content": risks_launch.get('launch_strategy', {})
                 }
             },
-            "evaluation": {
-                "overall_score": 7.5,
-                "note": "Fast generation mode - detailed quality check skipped",
-                "criterion_scores": {
-                    "consistency": 7.5,
-                    "quality": 7.5,
-                    "originality": 7.0,
-                    "feasibility": 8.0,
-                    "completeness": 7.0,
-                    "ethics": 8.5
-                },
-                "strengths": [
-                    "Quick generation time",
-                    "Comprehensive structure",
-                    "Clear actionable insights"
-                ],
-                "weaknesses": [
-                    "Less detailed than full mode",
-                    "Automated quality check"
-                ],
-                "recommendations": [
-                    "Review and customize generated content",
-                    "Add specific budget numbers",
-                    "Validate target audience assumptions"
-                ]
-            },
+            "evaluation": evaluation_data,
             "raw_data": {
                 "research": research,
                 "strategy": strategy
