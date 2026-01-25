@@ -259,13 +259,13 @@ def _add_content_to_pdf(content, story, styles, subheading_style, indent_level=0
                 for item in value:
                     if isinstance(item, dict):
                         for k, v in item.items():
-                            story.append(Paragraph(f"{indent}  • <b>{k.replace('_', ' ').title()}:</b> {v}", styles['Normal']))
+                            story.append(Paragraph(f"{indent}  • <b>{k.replace('_', ' ').title()}:</b> {str(v)}", styles['Normal']))
                     else:
                         story.append(Paragraph(f"{indent}  • {str(item)}", styles['Normal']))
                 story.append(Spacer(1, 0.05*inch))
-            elif value:  # Only add if value exists
-                # Clean up value text
-                value_str = str(value).strip()
+            elif value is not None:  # Only add if value exists
+                # Convert to string and clean up
+                value_str = str(value).strip() if isinstance(value, str) else str(value)
                 if value_str:
                     story.append(Paragraph(f"{indent}<b>{header}:</b> {value_str}", styles['Normal']))
                     story.append(Spacer(1, 0.05*inch))
@@ -275,9 +275,12 @@ def _add_content_to_pdf(content, story, styles, subheading_style, indent_level=0
                 _add_content_to_pdf(item, story, styles, subheading_style, indent_level)
             else:
                 story.append(Paragraph(f"{indent}• {str(item)}", styles['Normal']))
-    elif isinstance(content, str) and content.strip():
-        story.append(Paragraph(f"{indent}{content}", styles['Normal']))
-        story.append(Spacer(1, 0.05*inch))
+    elif content is not None:
+        # Convert to string if needed
+        content_str = str(content).strip() if isinstance(content, str) else str(content)
+        if content_str:
+            story.append(Paragraph(f"{indent}{content_str}", styles['Normal']))
+            story.append(Spacer(1, 0.05*inch))
 
 
 # Helper function to display nested dictionary content
