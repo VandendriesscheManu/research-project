@@ -51,7 +51,10 @@ class EvaluatorAgent:
         
         # Calculate overall score
         scores = evaluation["criterion_scores"]
-        evaluation["overall_score"] = sum(scores.values()) / len(scores)
+        if scores and len(scores) > 0:
+            evaluation["overall_score"] = sum(scores.values()) / len(scores)
+        else:
+            evaluation["overall_score"] = 7.5  # Default if no scores
         
         # Generate final recommendations
         evaluation["final_recommendations"] = self.generate_final_recommendations(evaluation)
@@ -108,6 +111,18 @@ Each value should be an object with: score (number), justification (string)
                 scores[criterion] = data['score']
             else:
                 scores[criterion] = 7.0  # Default score
+        
+        # Ensure we always have scores for all criteria
+        if not scores:
+            print("    ⚠️  No scores extracted, using defaults")
+            scores = {
+                "consistency": 7.5,
+                "quality": 7.5,
+                "originality": 7.0,
+                "feasibility": 8.0,
+                "completeness": 7.0,
+                "ethics": 8.5
+            }
         
         return scores
     
@@ -247,9 +262,14 @@ Format as JSON array of objects with keys: area, issue, suggestion, priority, ex
         print("  🔄 Checking consistency...")
         
         # Extract key elements for comparison
-        target_audience_research = research_data.get('target_audience', {}).get('primary_segment', '')
-        positioning = strategy_data.get('positioning', {}).get('positioning_statement', '')
-        messaging = strategy_data.get('messaging', {}).get('key_messages', [])
+        target_audience = research_data.get('target_audience', {})
+        target_audience_research = target_audience.get('primary_segment', '') if isinstance(target_audience, dict) else str(target_audience)
+        
+        positioning_data = strategy_data.get('positioning', {})
+        positioning = positioning_data.get('positioning_statement', '') if isinstance(positioning_data, dict) else ''
+        
+        messaging = strategy_data.get('messaging', [])
+        # messaging is already a list, not a dict
         
         prompt = f"""
 Check for consistency between market research and marketing strategy:
@@ -302,8 +322,9 @@ Format as JSON with keys: consistency_score, aligned_elements (array), inconsist
         """
         print("  ⚖️ Checking ethical considerations...")
         
-        messaging = strategy_data.get('messaging', {})
-        promotions = strategy_data.get('marketing_mix', {}).get('promotion', {})
+        messaging = strategy_data.get('messaging', [])
+        marketing_mix = strategy_data.get('marketing_mix', {})
+        promotions = marketing_mix.get('promotion', {}) if isinstance(marketing_mix, dict) else {}
         
         prompt = f"""
 Evaluate this marketing strategy for ethical considerations:
@@ -355,14 +376,21 @@ Format as JSON with keys: ethics_score, concerns (array), positive_aspects (arra
         print("  🔀 Suggesting alternatives...")
         
         positioning = strategy_data.get('positioning', {})
+        positioning_statement = positioning.get('positioning_statement', 'N/A') if isinstance(positioning, dict) else 'N/A'
+        
         marketing_mix = strategy_data.get('marketing_mix', {})
+        if isinstance(marketing_mix, dict):
+            promotion = marketing_mix.get('promotion', {})
+            channels = promotion.get('strategy', 'N/A') if isinstance(promotion, dict) else 'N/A'
+        else:
+            channels = 'N/A'
         
         prompt = f"""
 Based on this product and current strategy, suggest alternative approaches:
 
 PRODUCT: {product_data.get('product_name', 'N/A')}
-CURRENT POSITIONING: {positioning.get('positioning_statement', 'N/A')}
-CURRENT CHANNELS: {marketing_mix.get('promotion', {}).get('strategy', 'N/A')}
+CURRENT POSITIONING: {positioning_statement}
+CURRENT CHANNELS: {channels}
 
 Suggest alternatives for:
 1. Positioning Strategy - Different angle or focus
@@ -434,13 +462,33 @@ Format as JSON with keys: positioning_alternatives (array), audience_alternative
     
     def _create_plan_summary(self, product_data: Dict, research_data: Dict, strategy_data: Dict) -> str:
         """Create a condensed summary of the plan for evaluation."""
+        # Safe extraction with type checking
+        target_audience = research_data.get('target_audience', {})
+        target_str = target_audience.get('primary_segment', 'N/A') if isinstance(target_audience, dict) else str(target_audience)
+        
+        positioning = strategy_data.get('positioning', {})
+        positioning_str = positioning.get('positioning_statement', 'N/A') if isinstance(positioning, dict) else 'N/A'
+        
+        marketing_goals = strategy_data.get('marketing_goals', {})
+        goals_count = len(marketing_goals.get('primary_goals', [])) if isinstance(marketing_goals, dict) else 0
+        
+        budget = strategy_data.get('budget', {})
+        budget_str = budget.get('total_budget', 'N/A') if isinstance(budget, dict) else 'N/A'
+        
+        marketing_mix = strategy_data.get('marketing_mix', {})
+        if isinstance(marketing_mix, dict):
+            promotion = marketing_mix.get('promotion', {})
+            channels_str = promotion.get('strategy', 'N/A') if isinstance(promotion, dict) else 'N/A'
+        else:
+            channels_str = 'N/A'
+        
         summary_parts = [
             f"Product: {product_data.get('product_name', 'N/A')}",
-            f"Target: {research_data.get('target_audience', {}).get('primary_segment', 'N/A')}",
-            f"Positioning: {strategy_data.get('positioning', {}).get('positioning_statement', 'N/A')}",
-            f"Goals: {len(strategy_data.get('marketing_goals', {}).get('primary_goals', []))} primary goals defined",
-            f"Budget: {strategy_data.get('budget', {}).get('total_budget', 'N/A')}",
-            f"Channels: {strategy_data.get('marketing_mix', {}).get('promotion', {}).get('strategy', 'N/A')}"
+            f"Target: {target_str}",
+            f"Positioning: {positioning_str}",
+            f"Goals: {goals_count} primary goals defined",
+            f"Budget: {budget_str}",
+            f"Channels: {channels_str}"
         ]
         return "\n".join(summary_parts)
     

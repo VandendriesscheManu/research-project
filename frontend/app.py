@@ -1376,10 +1376,6 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
     st.markdown("---")
     st.header("📄 Your Marketing Plan")
     
-    # Fetch and display the marketing plan
-    if st.button("🔄 Reload Marketing Plan", use_container_width=True):
-        st.rerun()
-    
     try:
         headers = {"X-API-KEY": st.session_state.api_key}
         
@@ -1409,10 +1405,6 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 # Display evaluation summary
                 st.divider()
                 evaluation = plan_content.get('evaluation', {})
-                
-                # DEBUG: Show raw evaluation data
-                with st.expander("🔍 DEBUG: Raw Evaluation Data"):
-                    st.json(evaluation)
                 
                 st.subheader("📊 Evaluation Summary")
                 
