@@ -526,41 +526,6 @@ if st.session_state.show_architecture:
         st.error(f"Error loading architecture image: {e}")
     
     st.divider()
-    
-    st.subheader("📊 System Components")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        **Frontend**
-        - Streamlit Cloud (free hosting)
-        - 8-step guided form
-        - AI field assistants
-        - Real-time plan display
-        
-        **Backend Services**
-        - FastAPI REST API
-        - PostgreSQL database
-        - MCP server with LLM client
-        - URL extractor service
-        """)
-    
-    with col2:
-        st.markdown("""
-        **External Services**
-        - Groq API (LLM inference)
-        - Cloudflare Tunnel (free)
-        - GitHub Gist (URL sync)
-        
-        **Key Features**
-        - 12-section marketing plans
-        - AI quality evaluation
-        - Cost: ~$0.0008 per plan
-        - Generation time: 30-60s
-        """)
-    
-    st.divider()
     st.caption("For more details, see README.md and INSTALLATION.md")
 
 # FORM PAGE
