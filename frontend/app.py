@@ -4,6 +4,7 @@ import json
 import requests
 import streamlit as st
 from pathlib import Path
+from html import escape
 
 # MUST be the first Streamlit command
 st.set_page_config(page_title="Marketing Plan Generator", page_icon="📊")
@@ -129,6 +130,77 @@ def display_swot_table(swot_data):
 
 
 
+def is_meaningful(value):
+    """Return True when a generated value has something useful to display."""
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip() not in {"", "None", "N/A", "[]", "{}"}
+    if isinstance(value, (list, dict)):
+        return bool(value)
+    return True
+
+
+def clean_label(key):
+    return str(key).replace("_", " ").title()
+
+
+def display_metric_card(label, value):
+    """Render consistent metric cards without Streamlit's separate number font."""
+    st.markdown(
+        f"""
+        <div style="padding:0.25rem 0 0.75rem 0;font-family:inherit;color:inherit;">
+            <div style="font-size:0.95rem;opacity:0.82;margin-bottom:0.35rem;font-family:inherit;">
+                {escape(str(label))}
+            </div>
+            <div style="font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.05;font-weight:500;letter-spacing:-0.03em;font-family:inherit;">
+                {escape(str(value))}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def get_item_title(item, parent_key, idx):
+    """Pick a readable title for expandable structured list items."""
+    title_fields = [
+        "title", "name", "goal", "activity", "risk", "description",
+        "phase", "category", "milestone", "metric", "kpi", "channel"
+    ]
+    for field in title_fields:
+        value = item.get(field)
+        if is_meaningful(value):
+            return str(value)
+
+    singular = clean_label(parent_key).rstrip("s")
+    return f"{singular} {idx + 1}"
+
+
+def display_clean_value(value, level=0, section_key=""):
+    """Display nested values without raw Python brackets or repr formatting."""
+    if isinstance(value, dict):
+        display_dict_content(value, level + 1, section_key)
+    elif isinstance(value, list):
+        if not value:
+            st.markdown("- Details will be generated from the available product context.")
+            return
+
+        for item in value:
+            if isinstance(item, dict):
+                title = get_item_title(item, "item", 0)
+                if title:
+                    st.markdown(f"**{title}**")
+                for item_key, item_value in item.items():
+                    if is_meaningful(item_value) and str(item_value) != str(title):
+                        st.markdown(f"**{clean_label(item_key)}:**")
+                        display_clean_value(item_value, level + 1, section_key)
+            elif is_meaningful(item):
+                st.markdown(f"- {item}")
+    elif is_meaningful(value):
+        st.write(value)
+
+
 # Helper function to display nested dictionary content
 def display_dict_content(data, level=0, section_key=""):
     """Recursively display dictionary content in a simple, readable format"""
@@ -232,7 +304,7 @@ def display_dict_content(data, level=0, section_key=""):
             
             # Check if list is empty
             if not value:
-                st.caption("_No data available_")
+                st.markdown("- Details will be generated from the available product context.")
                 st.write("")
                 continue
             
@@ -279,12 +351,13 @@ def display_dict_content(data, level=0, section_key=""):
                             else:
                                 item_title = f"Item {idx+1}"
                         
-                        with st.expander(f"📄 {item_title}", expanded=False):
+                        with st.expander(str(item_title), expanded=False):
                             # Display dict items as simple key-value pairs
                             for k, v in item.items():
                                 if v and str(v).strip() and str(v) != 'None':
                                     k_display = k.replace('_', ' ').title()
-                                    st.markdown(f"**{k_display}:** {v}")
+                                    st.markdown(f"**{k_display}:**")
+                                    display_clean_value(v, level + 1, section_key)
                     else:
                         st.markdown(f"• {item}")
             else:
@@ -299,6 +372,68 @@ def display_dict_content(data, level=0, section_key=""):
             if value and str(value).strip() and str(value) != 'None':
                 st.markdown(f"**{header}:** {value}")
             st.write("")
+
+
+# Cleaner renderer used by the marketing plan output. This overrides the
+# original helper above while keeping the rest of the app call sites unchanged.
+def display_dict_content(data, level=0, section_key=""):
+    """Display generated content cleanly without empty-state or repr artifacts."""
+    if not isinstance(data, dict):
+        display_clean_value(data, level, section_key)
+        return
+
+    if section_key == "4_swot_analysis" or (
+        "strengths" in data and "weaknesses" in data and "opportunities" in data and "threats" in data
+    ):
+        display_swot_table(data)
+        return
+
+    if "raw_content" in data:
+        raw_text = str(data.get("raw_content", "")).replace("[Generated by", "Generated by")
+        st.write(raw_text[:1500])
+        return
+
+    for key, value in data.items():
+        if key == "raw":
+            continue
+
+        header = clean_label(key)
+        heading_level = min(4 + level, 6)
+
+        if isinstance(value, dict):
+            st.markdown(f"{'#' * heading_level} {header}")
+            if value:
+                display_dict_content(value, level + 1, section_key)
+            else:
+                st.markdown("- Details will be generated from the available product context.")
+        elif isinstance(value, list):
+            st.markdown(f"**{header}:**")
+            if not value:
+                st.markdown("- Details will be generated from the available product context.")
+            elif any(isinstance(item, dict) for item in value):
+                for idx, item in enumerate(value):
+                    if isinstance(item, dict):
+                        item_title = get_item_title(item, key, idx)
+                        with st.expander(item_title, expanded=False):
+                            for item_key, item_value in item.items():
+                                if is_meaningful(item_value) and str(item_value) != str(item_title):
+                                    st.markdown(f"**{clean_label(item_key)}:**")
+                                    display_clean_value(item_value, level + 1, section_key)
+                    elif is_meaningful(item):
+                        st.markdown(f"- {item}")
+            else:
+                for item in value:
+                    if is_meaningful(item):
+                        st.markdown(f"- {item}")
+            st.write("")
+        elif is_meaningful(value):
+            st.markdown(f"**{header}:**")
+            st.write(value)
+            st.write("")
+        else:
+            st.markdown(f"**{header}:** Details will be generated from the available product context.")
+            st.write("")
+
 
 # Only show main title on form/generate pages, not on info page
 if not st.session_state.get("show_architecture", False):
@@ -1398,11 +1533,11 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                 
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Product", metadata.get('product_name', 'N/A'))
+                    display_metric_card("Product", metadata.get('product_name', 'N/A'))
                 with col2:
-                    st.metric("Quality Score", f"{overall_score:.1f}/10")
+                    display_metric_card("Quality Score", f"{overall_score:.1f}/10")
                 with col3:
-                    st.metric("Version", metadata.get('version', 'N/A'))
+                    display_metric_card("Version", metadata.get('version', 'N/A'))
                 
                 st.caption(f"Generated: {metadata.get('generated_at', 'N/A')}")
                 if metadata.get('version') == 'fast_v1':
