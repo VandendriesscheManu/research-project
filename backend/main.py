@@ -1,5 +1,6 @@
 import os
 import json
+from threading import Lock
 from typing import Optional, List
 from datetime import date
 from fastapi import FastAPI, HTTPException, Header, Depends, BackgroundTasks
@@ -28,6 +29,9 @@ app.add_middleware(
 API_KEY = os.getenv("API_KEY")
 if not API_KEY:
     raise RuntimeError("API_KEY is not set. Set API_KEY in your .env file.")
+
+_generation_lock = Lock()
+_generation_in_progress = set()
 
 
 def require_api_key(x_api_key: str = Header(default="")):
@@ -198,8 +202,11 @@ def _generate_plan_background(brief_id_int: int, product_data: dict, auto_iterat
             print(f"ERROR: Invalid JSON from MCP server for brief {brief_id_int}: {json_err}")
             return
         
-        # Save to database
-        quality_score = marketing_plan.get('evaluation', {}).get('overall_score', 0)
+        # Save to database. New multi-agent plans expose quality_score at the
+        # top level, while legacy plans only expose evaluation.overall_score.
+        quality_score = marketing_plan.get('quality_score')
+        if quality_score is None:
+            quality_score = marketing_plan.get('evaluation', {}).get('overall_score', 0)
         plan_id = save_marketing_plan(brief_id_int, marketing_plan_json, quality_score)
         
         print(f"SUCCESS: Marketing plan generated for brief {brief_id_int}, plan_id {plan_id}, score {quality_score}")
@@ -208,6 +215,9 @@ def _generate_plan_background(brief_id_int: int, product_data: dict, auto_iterat
         import traceback
         error_details = traceback.format_exc()
         print(f"ERROR: Failed to generate plan for brief {brief_id_int}: {str(e)}\n{error_details}")
+    finally:
+        with _generation_lock:
+            _generation_in_progress.discard(brief_id_int)
 
 
 @app.post("/generate-marketing-plan", response_model=GenerateMarketingPlanResponse)
@@ -288,6 +298,11 @@ def generate_marketing_plan(req: GenerateMarketingPlanRequest, background_tasks:
         if not product_data.get("product_name"):
             raise HTTPException(status_code=422, detail="Product name is required to generate marketing plan")
         
+        # Mark the brief as processing before starting the background task so
+        # polling does not return an older saved plan while the new one runs.
+        with _generation_lock:
+            _generation_in_progress.add(brief_id_int)
+
         # Start background task
         background_tasks.add_task(_generate_plan_background, brief_id_int, product_data, req.auto_iterate)
         
@@ -312,6 +327,15 @@ def generate_marketing_plan(req: GenerateMarketingPlanRequest, background_tasks:
 def get_plan(brief_id: int, _: None = Depends(require_api_key)):
     """Retrieve the marketing plan for a product brief"""
     try:
+        with _generation_lock:
+            is_processing = brief_id in _generation_in_progress
+
+        if is_processing:
+            raise HTTPException(
+                status_code=202,
+                detail="Marketing plan is still being generated. Please try again in a moment."
+            )
+
         plan = get_marketing_plan(brief_id)
         if not plan:
             # Plan doesn't exist yet - check if brief exists

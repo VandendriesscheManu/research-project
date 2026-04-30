@@ -1,5 +1,6 @@
 import os
 import uuid
+import json
 import requests
 import streamlit as st
 from pathlib import Path
@@ -419,6 +420,9 @@ if "current_step" not in st.session_state:
 # Initialize page state
 if "page_state" not in st.session_state:
     st.session_state.page_state = "form"
+
+if "show_agent_trace" not in st.session_state:
+    st.session_state.show_agent_trace = False
 
 # Initialize architecture view state
 if "show_architecture" not in st.session_state:
@@ -1401,6 +1405,8 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                     st.metric("Version", metadata.get('version', 'N/A'))
                 
                 st.caption(f"Generated: {metadata.get('generated_at', 'N/A')}")
+                if metadata.get('version') == 'fast_v1':
+                    st.warning("This is a legacy fast_v1 plan. Generate the marketing plan again to create a multi_agent_v1 plan with agent traces.")
                 
                 # Display evaluation summary
                 st.divider()
@@ -1498,6 +1504,36 @@ if st.session_state.get("plan_generated") and st.session_state.get("plan_id"):
                         else:
                             st.write(content)
                 
+                st.divider()
+                st.subheader("Agent Trace")
+
+                trace_button_label = "Hide full agent trace" if st.session_state.show_agent_trace else "Show full agent trace"
+                if st.button(trace_button_label, key=f"toggle_agent_trace_{plan_data.get('id', 'current')}"):
+                    st.session_state.show_agent_trace = not st.session_state.show_agent_trace
+
+                if st.session_state.show_agent_trace:
+                    agent_trace = plan_content.get('agent_trace', [])
+                    if not agent_trace:
+                        st.warning("No agent trace is available for this saved plan. Older fast_v1 plans did not store multi-agent traces.")
+                    else:
+                        trace_payload = {
+                            "agent_trace": agent_trace,
+                            "step_plan": plan_content.get('raw_data', {}).get('step_plan', {}),
+                            "research": plan_content.get('research', {}),
+                            "initial_strategy": plan_content.get('initial_strategy', {}),
+                            "review": plan_content.get('review', {}),
+                            "revised_strategy": plan_content.get('revised_strategy', {}),
+                            "final_plan": plan_content.get('final_plan', {}),
+                        }
+                        st.json(trace_payload)
+                        st.download_button(
+                            "Download agent trace JSON",
+                            data=json.dumps(trace_payload, indent=2, ensure_ascii=False),
+                            file_name=f"agent_trace_{plan_data.get('id', 'plan')}.json",
+                            mime="application/json",
+                            key=f"download_agent_trace_{plan_data.get('id', 'current')}"
+                        )
+
             elif response.status_code == 404:
                 st.warning("📭 No marketing plan found yet. Click 'Generate Complete Marketing Plan' above.")
             else:
