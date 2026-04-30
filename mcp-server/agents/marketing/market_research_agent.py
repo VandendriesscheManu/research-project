@@ -38,6 +38,58 @@ class MarketResearchAgent:
         
         print("✅ Market research completed!")
         return research_report
+
+    def conduct_fast_research(self, product_data: Dict) -> Dict:
+        """
+        Conduct consolidated market research for the multi-agent orchestrator.
+
+        This preserves the ResearchAgent role while reusing the fast
+        orchestrator's two-call research phase instead of the six-call full
+        research path.
+        """
+        from .fast_marketing_orchestrator import fast_orchestrator
+
+        fast_research = fast_orchestrator._research_phase(product_data)
+        market_intelligence = fast_research.get("market_intelligence", {})
+        swot = fast_research.get("swot", {})
+
+        return {
+            "market_analysis": {
+                "market_size": market_intelligence.get("market_size", ""),
+                "growth_potential": market_intelligence.get("growth_rate", ""),
+                "maturity_stage": market_intelligence.get("current_situation", ""),
+                "segments": [],
+                "trends": market_intelligence.get("trends", []),
+                "barriers": [],
+                "opportunities": market_intelligence.get("market_opportunities", []),
+                "threats": swot.get("threats", []),
+                "pest_analysis": market_intelligence.get("pest_analysis", {}),
+            },
+            "target_audience": {
+                "primary_segment": product_data.get("target_primary", ""),
+                "secondary_segments": product_data.get("target_secondary", ""),
+                "demographics": market_intelligence.get("target_demographics", {}),
+                "psychographics": market_intelligence.get("target_psychographics", {}),
+                "pain_points": product_data.get("target_problems", ""),
+                "media_habits": product_data.get("marketing_channels", []),
+            },
+            "personas": product_data.get("target_personas", []),
+            "competitor_analysis": {
+                "competitors": market_intelligence.get("competitors", []),
+                "competitive_intensity": "Medium",
+                "gaps": market_intelligence.get("market_opportunities", []),
+                "differentiation_recommendations": [],
+            },
+            "swot_analysis": swot,
+            "trends": {
+                "current_trends": market_intelligence.get("trends", []),
+                "emerging_trends": [],
+                "consumer_trends": [],
+                "technology_trends": [],
+                "implications": market_intelligence.get("market_opportunities", []),
+            },
+            "raw_fast_research": fast_research,
+        }
     
     def analyze_market(self, product_data: Dict) -> Dict:
         """

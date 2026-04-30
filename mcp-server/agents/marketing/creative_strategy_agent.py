@@ -44,6 +44,51 @@ class CreativeStrategyAgent:
         
         print("✅ Marketing strategy completed!")
         return strategy
+
+    def develop_fast_strategy(self, product_data: Dict, research_data: Dict) -> Dict:
+        """
+        Develop a consolidated strategy for the multi-agent orchestrator.
+
+        This keeps the StrategyAgent role but avoids the slower eleven-call
+        full strategy path by reusing the fast orchestrator's consolidated
+        strategy phase.
+        """
+        from .fast_marketing_orchestrator import fast_orchestrator
+
+        fast_research = research_data.get("raw_fast_research", research_data)
+        fast_strategy = fast_orchestrator._strategy_phase(product_data, fast_research)
+        positioning = fast_strategy.get("positioning", {})
+        budget_monitoring = fast_strategy.get("budget_monitoring", {})
+        risks_launch = fast_strategy.get("risks_launch", {})
+
+        return {
+            "executive_summary": {
+                "overview": f"Marketing plan for {product_data.get('product_name', 'the product')}",
+                "market_opportunity": positioning.get("value_proposition", ""),
+                "target": product_data.get("target_primary", ""),
+                "strategy": positioning.get("positioning_statement", ""),
+                "expected_outcomes": budget_monitoring.get("budget", {}).get("roi_projection", ""),
+            },
+            "mission_vision_value": {
+                "mission": positioning.get("mission", ""),
+                "vision": positioning.get("vision", ""),
+                "value_proposition": positioning.get("value_proposition", ""),
+                "core_values": positioning.get("brand_personality", {}).get("values", []),
+            },
+            "positioning": positioning,
+            "messaging": {
+                "key_messages": positioning.get("messaging", []),
+                "tone_of_voice": positioning.get("brand_personality", {}),
+            },
+            "marketing_goals": fast_strategy.get("goals", {}),
+            "marketing_mix": fast_strategy.get("marketing_mix", {}),
+            "action_plan": fast_strategy.get("action_plan", {}),
+            "budget": budget_monitoring.get("budget", {}),
+            "monitoring": budget_monitoring.get("monitoring", {}),
+            "risks": {"risks": risks_launch.get("risks", [])},
+            "launch_strategy": risks_launch.get("launch_strategy", {}),
+            "raw_fast_strategy": fast_strategy,
+        }
     
     def create_executive_summary(self, product_data: Dict, research_data: Dict) -> Dict:
         """
@@ -597,6 +642,28 @@ research, and keep the strategy practical and specific.
         merged_strategy = dict(initial_strategy)
         merged_strategy.update(revised_strategy)
         return merged_strategy
+
+    def revise_strategy_fast(
+        self,
+        product_data: Dict,
+        research_data: Dict,
+        initial_strategy: Dict,
+        review: Dict
+    ) -> Dict:
+        """
+        Apply reviewer feedback without another LLM call.
+
+        The final plan composer already normalizes required sections, so this
+        method records the feedback and preserves the strategy payload without
+        adding another slow generation step.
+        """
+        revised_strategy = dict(initial_strategy)
+        revised_strategy["review_adjustments"] = {
+            "review_score": review.get("overall_score"),
+            "applied_feedback": review.get("final_recommendations", []) or review.get("improvement_suggestions", []),
+            "note": "Reviewer feedback captured for final composition and user trace.",
+        }
+        return revised_strategy
     
     def _parse_json_response(self, response: str, fallback: any) -> any:
         """

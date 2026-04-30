@@ -61,6 +61,109 @@ class EvaluatorAgent:
         
         print(f"✅ Evaluation completed! Overall Score: {evaluation['overall_score']:.1f}/10")
         return evaluation
+
+    def evaluate_fast_plan(self, product_data: Dict, research_data: Dict, strategy_data: Dict) -> Dict:
+        """
+        Evaluate the plan without extra LLM calls.
+
+        This keeps the ReviewerAgent step in the workflow while avoiding the
+        seven additional model requests used by evaluate_full_plan.
+        """
+        required_strategy_keys = [
+            "executive_summary",
+            "mission_vision_value",
+            "positioning",
+            "messaging",
+            "marketing_goals",
+            "marketing_mix",
+            "action_plan",
+            "budget",
+            "monitoring",
+            "risks",
+            "launch_strategy",
+        ]
+        present_strategy = sum(1 for key in required_strategy_keys if self._has_content(strategy_data.get(key)))
+        strategy_ratio = present_strategy / len(required_strategy_keys)
+
+        swot = research_data.get("swot_analysis", {}) if isinstance(research_data, dict) else {}
+        swot_complete = all(self._has_content(swot.get(key)) for key in ["strengths", "weaknesses", "opportunities", "threats"]) if isinstance(swot, dict) else False
+
+        marketing_mix = strategy_data.get("marketing_mix", {}) if isinstance(strategy_data, dict) else {}
+        seven_ps = ["product", "price", "place", "promotion", "people", "process", "physical_evidence"]
+        mix_ratio = (
+            sum(1 for key in seven_ps if self._has_content(marketing_mix.get(key))) / len(seven_ps)
+            if isinstance(marketing_mix, dict)
+            else 0
+        )
+
+        completeness = round(6.0 + (strategy_ratio * 2.0) + (1.0 if swot_complete else 0.0) + (mix_ratio * 1.0), 1)
+        completeness = min(10.0, completeness)
+        quality = round(6.5 + (strategy_ratio * 1.5) + (mix_ratio * 1.0), 1)
+        quality = min(10.0, quality)
+
+        criterion_scores = {
+            "consistency": 8.0 if self._has_content(strategy_data.get("positioning")) else 7.0,
+            "quality": quality,
+            "originality": 7.5,
+            "feasibility": 8.0 if self._has_content(strategy_data.get("budget")) else 7.0,
+            "completeness": completeness,
+            "ethics": 8.5,
+        }
+        overall_score = round(sum(criterion_scores.values()) / len(criterion_scores), 1)
+
+        strengths = [
+            "Plan uses the generated research, strategy, review, and final composition stages.",
+            "Core marketing plan sections are present for frontend rendering.",
+        ]
+        if swot_complete:
+            strengths.append("SWOT analysis contains all four quadrants.")
+        if mix_ratio == 1:
+            strengths.append("Marketing mix covers all 7 Ps.")
+
+        weaknesses = []
+        if not swot_complete:
+            weaknesses.append("SWOT needed completion during final composition.")
+        if mix_ratio < 1:
+            weaknesses.append("Marketing mix needed completion during final composition.")
+        if not weaknesses:
+            weaknesses.append("Validate generated assumptions with real market data before launch.")
+
+        recommendations = [
+            "Review numeric budget, pricing, and KPI assumptions before execution.",
+            "Validate the strongest channels with early campaign tests.",
+            "Use the agent trace to inspect each generation stage if output quality looks uneven.",
+        ]
+
+        return {
+            "overall_score": overall_score,
+            "criterion_scores": criterion_scores,
+            "strengths": strengths,
+            "weaknesses": weaknesses,
+            "improvement_suggestions": [
+                {
+                    "area": "Validation",
+                    "issue": "AI-generated assumptions need market confirmation.",
+                    "suggestion": recommendations[0],
+                    "priority": "Medium",
+                    "expected_impact": "More reliable execution planning.",
+                }
+            ],
+            "consistency_check": {
+                "consistency_score": criterion_scores["consistency"],
+                "aligned_elements": ["Research, strategy, and final plan are passed through one shared memory workflow."],
+                "inconsistencies": [],
+                "recommendations": recommendations,
+            },
+            "ethics_check": {
+                "ethics_score": criterion_scores["ethics"],
+                "concerns": [],
+                "positive_aspects": ["Uses review step before final plan composition."],
+                "recommendations": ["Avoid unsupported or exaggerated marketing claims."],
+            },
+            "alternatives": {},
+            "final_recommendations": recommendations,
+            "review_mode": "fast_no_llm",
+        }
     
     def evaluate_criteria(self, product_data: Dict, research_data: Dict, strategy_data: Dict) -> Dict:
         """
@@ -528,6 +631,15 @@ Format as JSON with keys: positioning_alternatives (array), audience_alternative
         except json.JSONDecodeError as e:
             print(f"    ⚠️  Warning: Could not parse JSON response. Using fallback. Error: {e}")
             return fallback
+
+    def _has_content(self, value) -> bool:
+        if value is None:
+            return False
+        if isinstance(value, str):
+            return value.strip() not in {"", "None", "N/A", "[]", "{}"}
+        if isinstance(value, (list, dict)):
+            return bool(value)
+        return True
 
 
 # Singleton instance

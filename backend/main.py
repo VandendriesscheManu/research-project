@@ -32,6 +32,7 @@ if not API_KEY:
 
 _generation_lock = Lock()
 _generation_in_progress = set()
+_generation_failures = {}
 
 
 def require_api_key(x_api_key: str = Header(default="")):
@@ -193,13 +194,19 @@ def _generate_plan_background(brief_id_int: int, product_data: dict, auto_iterat
         marketing_plan_json = mcp_generate_marketing_plan(product_data, auto_iterate)
         
         if not marketing_plan_json or marketing_plan_json.strip() == "":
-            print(f"ERROR: MCP server returned empty response for brief {brief_id_int}")
+            error_message = "MCP server returned empty response"
+            print(f"ERROR: {error_message} for brief {brief_id_int}")
+            with _generation_lock:
+                _generation_failures[brief_id_int] = error_message
             return
         
         try:
             marketing_plan = json.loads(marketing_plan_json)
         except json.JSONDecodeError as json_err:
-            print(f"ERROR: Invalid JSON from MCP server for brief {brief_id_int}: {json_err}")
+            error_message = f"Invalid JSON from MCP server: {json_err}"
+            print(f"ERROR: {error_message} for brief {brief_id_int}")
+            with _generation_lock:
+                _generation_failures[brief_id_int] = error_message
             return
         
         # Save to database. New multi-agent plans expose quality_score at the
@@ -208,12 +215,16 @@ def _generate_plan_background(brief_id_int: int, product_data: dict, auto_iterat
         if quality_score is None:
             quality_score = marketing_plan.get('evaluation', {}).get('overall_score', 0)
         plan_id = save_marketing_plan(brief_id_int, marketing_plan_json, quality_score)
+        with _generation_lock:
+            _generation_failures.pop(brief_id_int, None)
         
         print(f"SUCCESS: Marketing plan generated for brief {brief_id_int}, plan_id {plan_id}, score {quality_score}")
         
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
+        with _generation_lock:
+            _generation_failures[brief_id_int] = str(e)
         print(f"ERROR: Failed to generate plan for brief {brief_id_int}: {str(e)}\n{error_details}")
     finally:
         with _generation_lock:
@@ -302,6 +313,7 @@ def generate_marketing_plan(req: GenerateMarketingPlanRequest, background_tasks:
         # polling does not return an older saved plan while the new one runs.
         with _generation_lock:
             _generation_in_progress.add(brief_id_int)
+            _generation_failures.pop(brief_id_int, None)
 
         # Start background task
         background_tasks.add_task(_generate_plan_background, brief_id_int, product_data, req.auto_iterate)
@@ -329,11 +341,18 @@ def get_plan(brief_id: int, _: None = Depends(require_api_key)):
     try:
         with _generation_lock:
             is_processing = brief_id in _generation_in_progress
+            generation_error = _generation_failures.get(brief_id)
 
         if is_processing:
             raise HTTPException(
                 status_code=202,
                 detail="Marketing plan is still being generated. Please try again in a moment."
+            )
+
+        if generation_error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Marketing plan generation failed: {generation_error}"
             )
 
         plan = get_marketing_plan(brief_id)

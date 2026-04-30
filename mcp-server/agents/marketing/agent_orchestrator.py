@@ -48,20 +48,20 @@ class AgentOrchestrator:
         step_plan = self.planner.create_step_plan(product_data)
         memory.write("step_plan", step_plan, self.planner.name)
 
-        memory.add_trace("ResearchAgent", "Started market research")
-        research = self.research_agent.conduct_full_research(product_data)
+        memory.add_trace("ResearchAgent", "Started consolidated market research")
+        research = self.research_agent.conduct_fast_research(product_data)
         memory.write("research", research, "ResearchAgent")
 
-        memory.add_trace("StrategyAgent", "Started initial strategy")
-        initial_strategy = self.strategy_agent.develop_full_strategy(product_data, research)
+        memory.add_trace("StrategyAgent", "Started consolidated initial strategy")
+        initial_strategy = self.strategy_agent.develop_fast_strategy(product_data, research)
         memory.write("initial_strategy", initial_strategy, "StrategyAgent")
 
-        memory.add_trace("ReviewerAgent", "Started initial strategy review")
-        review = self.reviewer_agent.evaluate_full_plan(product_data, research, initial_strategy)
+        memory.add_trace("ReviewerAgent", "Started fast initial strategy review")
+        review = self.reviewer_agent.evaluate_fast_plan(product_data, research, initial_strategy)
         memory.write("review", review, "ReviewerAgent")
 
-        memory.add_trace("StrategyAgent", "Started reviewer-guided strategy revision")
-        revised_strategy = self.strategy_agent.revise_strategy(product_data, research, initial_strategy, review)
+        memory.add_trace("StrategyAgent", "Started fast reviewer-guided strategy revision")
+        revised_strategy = self.strategy_agent.revise_strategy_fast(product_data, research, initial_strategy, review)
         memory.write("revised_strategy", revised_strategy, "StrategyAgent")
 
         memory.add_trace("FinalPlanAgent", "Started final 12-section plan composition")
