@@ -3,12 +3,13 @@ import json
 from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
 from agents import field_assistant_agent
+from agents.marketing.agent_orchestrator import agent_orchestrator
 from agents.marketing.fast_marketing_orchestrator import fast_orchestrator
 
 load_dotenv()
 
 # Initialize agents as singletons
-marketing_plan_orchestrator = fast_orchestrator  # Use fast version
+marketing_plan_orchestrator = agent_orchestrator
 
 # Create MCP server
 mcp = FastMCP(
